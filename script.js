@@ -1402,8 +1402,8 @@ function initApp() {
         localStorage.setItem('products_backup', JSON.stringify(products));
       })
       .catch(jsonError => {
-        console.error("Помилка завантаження з JSON:", jsonError);
-        showNotification("Не вдалося завантажити товари", "error");
+        console.error("");
+        showNotification("");
         isProductsLoading = false;
         renderProducts(); // Показать сообщение об ошибке
       });
