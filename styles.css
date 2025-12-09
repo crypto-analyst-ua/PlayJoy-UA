@@ -4415,3 +4415,45 @@ main {
     font-size: 0.9rem !important;
   }
 }
+
+/* Добавьте эти стили в конец файла styles.css */
+
+.gender-filter {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.gender-btn {
+    padding: 8px 16px;
+    border: 2px solid #FF6B8B;
+    background: white;
+    color: #FF6B8B;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.gender-btn:hover {
+    background: #FFF0F3;
+    transform: translateY(-2px);
+}
+
+.gender-btn.active {
+    background: #FF6B8B;
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 139, 0.3);
+}
+
+@media (max-width: 768px) {
+    .gender-filter {
+        justify-content: center;
+    }
+    
+    .gender-btn {
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+}

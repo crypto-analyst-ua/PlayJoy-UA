@@ -36,6 +36,7 @@ const FEED_URL_KEY = "children_toys_feed_url";
 const FEED_UPDATE_TIME_KEY = "children_toys_feed_update";
 const VIEW_MODE_KEY = "children_toys_view_mode";
 const ADMINS_STORAGE_KEY = "children_toys_admins";
+const GENDER_FILTER_KEY = "children_toys_gender_filter"; // Додано
 
 // ===== СЛОВНИК ПЕРЕКЛАДУ КАТЕГОРІЙ =====
 const categoryTranslations = {
@@ -381,763 +382,763 @@ function getEnhancedSearchSuggestions(query) {
       if (suggestions.length >= 8) break;
     }
     
-    // Добавляем быстрые действия если мало результатов
-    if (suggestions.length < 3) {
-      suggestions.push({
-        type: 'action',
-        icon: '🔍',
-        value: `Знайти "${query}"`,
-        action: 'search',
-        relevance: 100
-      });
-    }
-    
-    suggestions.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
-    
-    // Очистка кэша
-    if (searchCache.size > SEARCH_CONFIG.MAX_CACHE_SIZE) {
-      const keys = Array.from(searchCache.keys()).slice(0, 20);
-      keys.forEach(key => searchCache.delete(key));
-    }
-    
-    const finalSuggestions = suggestions.slice(0, 6);
-    searchCache.set(normalizedQuery, finalSuggestions);
-    return finalSuggestions;
-  } catch (error) {
-    console.error("Ошибка в поиске подсказок:", error);
-    return getFallbackSuggestions(query);
-  }
-}
-
-// Подсказки из истории поиска
-function getSearchHistorySuggestions() {
-  const history = getSearchHistory();
-  return history.slice(0, 5).map(term => ({
-    type: 'history',
-    icon: '🕒',
-    value: term,
-    action: 'search',
-    relevance: 100
-  }));
-}
-
-// Резервные подсказки при ошибке
-function getFallbackSuggestions(query) {
-  return [
-    {
+  // Добавляем быстрые действия если мало результатов
+  if (suggestions.length < 3) {
+    suggestions.push({
       type: 'action',
       icon: '🔍',
       value: `Знайти "${query}"`,
       action: 'search',
       relevance: 100
-    }
-  ];
+    });
+  }
+  
+  suggestions.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
+  
+  // Очистка кэша
+  if (searchCache.size > SEARCH_CONFIG.MAX_CACHE_SIZE) {
+    const keys = Array.from(searchCache.keys()).slice(0, 20);
+    keys.forEach(key => searchCache.delete(key));
+  }
+  
+  const finalSuggestions = suggestions.slice(0, 6);
+  searchCache.set(normalizedQuery, finalSuggestions);
+  return finalSuggestions;
+} catch (error) {
+  console.error("Ошибка в поиске подсказок:", error);
+  return getFallbackSuggestions(query);
+}
+}
+
+// Подсказки из истории поиска
+function getSearchHistorySuggestions() {
+const history = getSearchHistory();
+return history.slice(0, 5).map(term => ({
+  type: 'history',
+  icon: '🕒',
+  value: term,
+  action: 'search',
+  relevance: 100
+}));
+}
+
+// Резервные подсказки при ошибке
+function getFallbackSuggestions(query) {
+return [
+  {
+    type: 'action',
+    icon: '🔍',
+    value: `Знайти "${query}"`,
+    action: 'search',
+    relevance: 100
+  }
+];
 }
 
 // Функция для экранирования HTML
 function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+const div = document.createElement('div');
+div.textContent = text;
+return div.innerHTML;
 }
 
 // Показать историю поиска
 function showSearchHistorySuggestions(isMobile = false) {
-  const history = getSearchHistory();
+const history = getSearchHistory();
+
+const searchContainer = isMobile 
+  ? document.querySelector('.search-container-mobile') 
+  : document.querySelector('.search-container');
+
+if (!searchContainer) return;
+
+const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
+let suggestionsContainer = document.getElementById(suggestionsId);
+
+if (!suggestionsContainer) {
+  suggestionsContainer = document.createElement('div');
+  suggestionsContainer.id = suggestionsId;
+  suggestionsContainer.className = 'search-suggestions' + (isMobile ? ' mobile-suggestions' : '');
+  searchContainer.appendChild(suggestionsContainer);
+}
+
+suggestionsContainer.innerHTML = '';
+
+// Добавляем заголовок истории поиска
+if (history.length > 0) {
+  const historyHeader = document.createElement('div');
+  historyHeader.className = 'search-suggestion-header';
+  historyHeader.innerHTML = `
+    <span>Історія пошуку</span>
+    <button class="clear-all-history-btn" onclick="event.stopPropagation(); clearSearchHistory()">
+      <i class="fas fa-trash"></i> Очистити все
+    </button>
+  `;
+  suggestionsContainer.appendChild(historyHeader);
+}
+
+if (history.length === 0) {
+  const emptyHistory = document.createElement('div');
+  emptyHistory.className = 'search-suggestion';
+  emptyHistory.innerHTML = `
+    <i class="fas fa-history"></i>
+    <span class="suggestion-text">Історія пошуку порожня</span>
+  `;
+  suggestionsContainer.appendChild(emptyHistory);
+  suggestionsContainer.style.display = 'block';
+  return;
+}
+
+history.slice(0, 5).forEach((term, index) => {
+  const div = document.createElement('div');
+  div.className = `search-suggestion ${index === 0 ? 'active' : ''}`;
+  div.innerHTML = `
+    <i class="fas fa-history"></i>
+    <span class="suggestion-text">${escapeHtml(term)}</span>
+    <span class="suggestion-type">Історія</span>
+    <button class="clear-history-btn" onclick="event.stopPropagation(); removeFromSearchHistory('${term}')">
+      <i class="fas fa-times"></i>
+    </button>
+  `;
   
-  const searchContainer = isMobile 
-    ? document.querySelector('.search-container-mobile') 
-    : document.querySelector('.search-container');
+  div.addEventListener('click', () => {
+    if (isMobile) {
+      document.getElementById('search-mobile').value = term;
+    } else {
+      document.getElementById('search').value = term;
+    }
+    currentFilters.search = term;
+    applyFilters();
+    hideSearchSuggestions(isMobile);
+  });
   
-  if (!searchContainer) return;
-  
-  const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
-  let suggestionsContainer = document.getElementById(suggestionsId);
-  
-  if (!suggestionsContainer) {
-    suggestionsContainer = document.createElement('div');
-    suggestionsContainer.id = suggestionsId;
-    suggestionsContainer.className = 'search-suggestions' + (isMobile ? ' mobile-suggestions' : '');
-    searchContainer.appendChild(suggestionsContainer);
-  }
-  
+  suggestionsContainer.appendChild(div);
+});
+
+suggestionsContainer.style.display = 'block';
+}
+
+// Функция показа подсказок
+function showSearchSuggestions(query, isMobile = false) {
+if (!query || query.length < 1) {
+  showSearchHistorySuggestions(isMobile);
+  return;
+}
+
+const suggestions = getEnhancedSearchSuggestions(query);
+const searchContainer = isMobile 
+  ? document.querySelector('.search-container-mobile') 
+  : document.querySelector('.search-container');
+
+if (!searchContainer) return;
+
+const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
+let suggestionsContainer = document.getElementById(suggestionsId);
+
+if (!suggestionsContainer) {
+  suggestionsContainer = document.createElement('div');
+  suggestionsContainer.id = suggestionsId;
+  suggestionsContainer.className = 'search-suggestions' + (isMobile ? ' mobile-suggestions' : '');
+  searchContainer.appendChild(suggestionsContainer);
+}
+
+if (suggestions.length > 0) {
   suggestionsContainer.innerHTML = '';
   
-  // Добавляем заголовок истории поиска
-  if (history.length > 0) {
-    const historyHeader = document.createElement('div');
-    historyHeader.className = 'search-suggestion-header';
-    historyHeader.innerHTML = `
-      <span>Історія пошуку</span>
-      <button class="clear-all-history-btn" onclick="event.stopPropagation(); clearSearchHistory()">
-        <i class="fas fa-trash"></i> Очистити все
-      </button>
-    `;
-    suggestionsContainer.appendChild(historyHeader);
-  }
-  
-  if (history.length === 0) {
-    const emptyHistory = document.createElement('div');
-    emptyHistory.className = 'search-suggestion';
-    emptyHistory.innerHTML = `
-      <i class="fas fa-history"></i>
-      <span class="suggestion-text">Історія пошуку порожня</span>
-    `;
-    suggestionsContainer.appendChild(emptyHistory);
-    suggestionsContainer.style.display = 'block';
-    return;
-  }
-  
-  history.slice(0, 5).forEach((term, index) => {
+  suggestions.forEach((suggestion, index) => {
     const div = document.createElement('div');
-    div.className = `search-suggestion ${index === 0 ? 'active' : ''}`;
-    div.innerHTML = `
-      <i class="fas fa-history"></i>
-      <span class="suggestion-text">${escapeHtml(term)}</span>
-      <span class="suggestion-type">Історія</span>
-      <button class="clear-history-btn" onclick="event.stopPropagation(); removeFromSearchHistory('${term}')">
-        <i class="fas fa-times"></i>
-      </button>
-    `;
+    div.className = `search-suggestion ${suggestion.type === 'action' ? 'suggestion-action' : ''} ${index === 0 ? 'active' : ''}`;
     
-    div.addEventListener('click', () => {
-      if (isMobile) {
-        document.getElementById('search-mobile').value = term;
-      } else {
-        document.getElementById('search').value = term;
-      }
-      currentFilters.search = term;
-      applyFilters();
-      hideSearchSuggestions(isMobile);
+    if (suggestion.type === 'action') {
+      div.innerHTML = `
+        ${suggestion.icon} 
+        <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
+      `;
+      
+      div.addEventListener('click', () => {
+        if (suggestion.action === 'search') {
+          const searchValue = suggestion.value.replace(/^Знайти "/, '').replace(/"$/, '');
+          if (isMobile) {
+            document.getElementById('search-mobile').value = searchValue;
+          } else {
+            document.getElementById('search').value = searchValue;
+          }
+          currentFilters.search = searchValue;
+          applyFilters();
+        }
+        hideSearchSuggestions(isMobile);
+      });
+    } else if (suggestion.type === 'history') {
+      div.innerHTML = `
+        ${suggestion.icon} 
+        <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
+        <span class="suggestion-type">Історія</span>
+        <button class="clear-history-btn" onclick="event.stopPropagation(); removeFromSearchHistory('${suggestion.value}')">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      
+      div.addEventListener('click', () => {
+        if (isMobile) {
+          document.getElementById('search-mobile').value = suggestion.value;
+        } else {
+          document.getElementById('search').value = suggestion.value;
+        }
+        currentFilters.search = suggestion.value;
+        applyFilters();
+        hideSearchSuggestions(isMobile);
+      });
+    } else {
+      div.innerHTML = `
+        ${suggestion.icon} 
+        <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
+        <span class="suggestion-type">${suggestion.type}</span>
+      `;
+      
+      div.addEventListener('click', () => {
+        if (isMobile) {
+          document.getElementById('search-mobile').value = suggestion.value;
+        } else {
+          document.getElementById('search').value = suggestion.value;
+        }
+        currentFilters.search = suggestion.value;
+        applyFilters();
+        hideSearchSuggestions(isMobile);
+        
+        if (suggestion.productId) {
+          showProductDetail(suggestion.productId);
+        }
+      });
+    }
+    
+    div.addEventListener('mouseenter', () => {
+      suggestionsContainer.querySelectorAll('.search-suggestion').forEach(s => 
+        s.classList.remove('active')
+      );
+      div.classList.add('active');
     });
     
     suggestionsContainer.appendChild(div);
   });
   
   suggestionsContainer.style.display = 'block';
+} else {
+  suggestionsContainer.style.display = 'none';
 }
-
-// Функция показа подсказок
-function showSearchSuggestions(query, isMobile = false) {
-  if (!query || query.length < 1) {
-    showSearchHistorySuggestions(isMobile);
-    return;
-  }
-  
-  const suggestions = getEnhancedSearchSuggestions(query);
-  const searchContainer = isMobile 
-    ? document.querySelector('.search-container-mobile') 
-    : document.querySelector('.search-container');
-  
-  if (!searchContainer) return;
-  
-  const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
-  let suggestionsContainer = document.getElementById(suggestionsId);
-  
-  if (!suggestionsContainer) {
-    suggestionsContainer = document.createElement('div');
-    suggestionsContainer.id = suggestionsId;
-    suggestionsContainer.className = 'search-suggestions' + (isMobile ? ' mobile-suggestions' : '');
-    searchContainer.appendChild(suggestionsContainer);
-  }
-  
-  if (suggestions.length > 0) {
-    suggestionsContainer.innerHTML = '';
-    
-    suggestions.forEach((suggestion, index) => {
-      const div = document.createElement('div');
-      div.className = `search-suggestion ${suggestion.type === 'action' ? 'suggestion-action' : ''} ${index === 0 ? 'active' : ''}`;
-      
-      if (suggestion.type === 'action') {
-        div.innerHTML = `
-          ${suggestion.icon} 
-          <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
-        `;
-        
-        div.addEventListener('click', () => {
-          if (suggestion.action === 'search') {
-            const searchValue = suggestion.value.replace(/^Знайти "/, '').replace(/"$/, '');
-            if (isMobile) {
-              document.getElementById('search-mobile').value = searchValue;
-            } else {
-              document.getElementById('search').value = searchValue;
-            }
-            currentFilters.search = searchValue;
-            applyFilters();
-          }
-          hideSearchSuggestions(isMobile);
-        });
-      } else if (suggestion.type === 'history') {
-        div.innerHTML = `
-          ${suggestion.icon} 
-          <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
-          <span class="suggestion-type">Історія</span>
-          <button class="clear-history-btn" onclick="event.stopPropagation(); removeFromSearchHistory('${suggestion.value}')">
-            <i class="fas fa-times"></i>
-          </button>
-        `;
-        
-        div.addEventListener('click', () => {
-          if (isMobile) {
-            document.getElementById('search-mobile').value = suggestion.value;
-          } else {
-            document.getElementById('search').value = suggestion.value;
-          }
-          currentFilters.search = suggestion.value;
-          applyFilters();
-          hideSearchSuggestions(isMobile);
-        });
-      } else {
-        div.innerHTML = `
-          ${suggestion.icon} 
-          <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
-          <span class="suggestion-type">${suggestion.type}</span>
-        `;
-        
-        div.addEventListener('click', () => {
-          if (isMobile) {
-            document.getElementById('search-mobile').value = suggestion.value;
-          } else {
-            document.getElementById('search').value = suggestion.value;
-          }
-          currentFilters.search = suggestion.value;
-          applyFilters();
-          hideSearchSuggestions(isMobile);
-          
-          if (suggestion.productId) {
-            showProductDetail(suggestion.productId);
-          }
-        });
-      }
-      
-      div.addEventListener('mouseenter', () => {
-        suggestionsContainer.querySelectorAll('.search-suggestion').forEach(s => 
-          s.classList.remove('active')
-        );
-        div.classList.add('active');
-      });
-      
-      suggestionsContainer.appendChild(div);
-    });
-    
-    suggestionsContainer.style.display = 'block';
-  } else {
-    suggestionsContainer.style.display = 'none';
-  }
 }
 
 // Функция для скрытия подсказок
 function hideSearchSuggestions(isMobile = false) {
-  const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
-  const suggestionsContainer = document.getElementById(suggestionsId);
-  if (suggestionsContainer) {
-    suggestionsContainer.style.display = 'none';
-    suggestionsContainer.querySelectorAll('.search-suggestion').forEach(s => 
-      s.classList.remove('active')
-    );
-  }
+const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
+const suggestionsContainer = document.getElementById(suggestionsId);
+if (suggestionsContainer) {
+  suggestionsContainer.style.display = 'none';
+  suggestionsContainer.querySelectorAll('.search-suggestion').forEach(s => 
+    s.classList.remove('active')
+  );
+}
 }
 
 // ===== АУДИО ПОИСК =====
 
 // Инициализация аудио поиска
 function initVoiceSearch() {
-  // Проверяем поддержку браузером
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    console.log('Браузер не поддерживает распознавание речи');
-    return;
-  }
+// Проверяем поддержку браузером
+if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+  console.log('Браузер не поддерживает распознавание речи');
+  return;
+}
 
-  // Создаем объект распознавания речи
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
+// Создаем объект распознавания речи
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+recognition = new SpeechRecognition();
+
+// Настройки распознавания
+recognition.continuous = false;
+recognition.interimResults = false;
+recognition.lang = 'uk-UA'; // Украинский язык
+
+// Обработчики событий
+recognition.onstart = function() {
+  isListening = true;
+  updateVoiceSearchUI(true);
+  showNotification('Слухаю... Говоріть now', 'info');
+};
+
+recognition.onresult = function(event) {
+  const transcript = event.results[0][0].transcript;
   
-  // Настройки распознавания
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognition.lang = 'uk-UA'; // Украинский язык
+  // Вставляем результат в поле поиска
+  const searchInput = document.getElementById('search');
+  const searchMobileInput = document.getElementById('search-mobile');
+  
+  if (searchInput) {
+    searchInput.value = transcript;
+    searchInput.dispatchEvent(new Event('input'));
+  }
+  
+  if (searchMobileInput) {
+    searchMobileInput.value = transcript;
+    searchMobileInput.dispatchEvent(new Event('input'));
+  }
+  
+  // Сохраняем в историю поиска
+  saveToSearchHistory(transcript);
+  
+  showNotification(`Знайдено за запитом: "${transcript}"`, 'success');
+};
 
-  // Обработчики событий
-  recognition.onstart = function() {
-    isListening = true;
-    updateVoiceSearchUI(true);
-    showNotification('Слухаю... Говоріть now', 'info');
-  };
+recognition.onerror = function(event) {
+  isListening = false;
+  updateVoiceSearchUI(false);
+  
+  let errorMessage = 'Помилка розпізнавання мови';
+  switch (event.error) {
+    case 'no-speech':
+      errorMessage = 'Мова не розпізнана. Спробуйте ще раз.';
+      break;
+    case 'audio-capture':
+      errorMessage = 'Мікрофон не знайдено або відсутній дозвіл.';
+      break;
+    case 'not-allowed':
+      errorMessage = 'Дозвіл на використання мікрофона не надано.';
+      break;
+    default:
+      errorMessage = `Помилка: ${event.error}`;
+  }
+  
+  showNotification(errorMessage, 'error');
+};
 
-  recognition.onresult = function(event) {
-    const transcript = event.results[0][0].transcript;
-    
-    // Вставляем результат в поле поиска
-    const searchInput = document.getElementById('search');
-    const searchMobileInput = document.getElementById('search-mobile');
-    
-    if (searchInput) {
-      searchInput.value = transcript;
-      searchInput.dispatchEvent(new Event('input'));
-    }
-    
-    if (searchMobileInput) {
-      searchMobileInput.value = transcript;
-      searchMobileInput.dispatchEvent(new Event('input'));
-    }
-    
-    // Сохраняем в историю поиска
-    saveToSearchHistory(transcript);
-    
-    showNotification(`Знайдено за запитом: "${transcript}"`, 'success');
-  };
-
-  recognition.onerror = function(event) {
-    isListening = false;
-    updateVoiceSearchUI(false);
-    
-    let errorMessage = 'Помилка розпізнавання мови';
-    switch (event.error) {
-      case 'no-speech':
-        errorMessage = 'Мова не розпізнана. Спробуйте ще раз.';
-        break;
-      case 'audio-capture':
-        errorMessage = 'Мікрофон не знайдено або відсутній дозвіл.';
-        break;
-      case 'not-allowed':
-        errorMessage = 'Дозвіл на використання мікрофона не надано.';
-        break;
-      default:
-        errorMessage = `Помилка: ${event.error}`;
-    }
-    
-    showNotification(errorMessage, 'error');
-  };
-
-  recognition.onend = function() {
-    isListening = false;
-    updateVoiceSearchUI(false);
-  };
+recognition.onend = function() {
+  isListening = false;
+  updateVoiceSearchUI(false);
+};
 }
 
 // Функция для запуска/остановки аудио поиска
 function toggleVoiceSearch(isMobile = false) {
-  if (!recognition) {
-    showNotification('Аудіопошук не підтримується вашим браузером', 'error');
-    return;
-  }
+if (!recognition) {
+  showNotification('Аудіопошук не підтримується вашим браузером', 'error');
+  return;
+}
 
-  if (isListening) {
-    recognition.stop();
-    isListening = false;
-    updateVoiceSearchUI(false);
-    showNotification('Аудіопошук зупинено', 'info');
-  } else {
-    try {
-      recognition.start();
-    } catch (error) {
-      console.error('Ошибка запуска распознавания:', error);
-      showNotification('Помилка запуску аудіопошуку', 'error');
-    }
+if (isListening) {
+  recognition.stop();
+  isListening = false;
+  updateVoiceSearchUI(false);
+  showNotification('Аудіопошук зупинено', 'info');
+} else {
+  try {
+    recognition.start();
+  } catch (error) {
+    console.error('Ошибка запуска распознавания:', error);
+    showNotification('Помилка запуску аудіопошуку', 'error');
   }
+}
 }
 
 // Обновление UI для аудио поиска
 function updateVoiceSearchUI(listening) {
-  const voiceButtons = document.querySelectorAll('.voice-search-btn');
-  
-  voiceButtons.forEach(btn => {
-    if (listening) {
-      btn.classList.add('listening');
-      btn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-      btn.title = 'Зупинити аудіопошук';
-    } else {
-      btn.classList.remove('listening');
-      btn.innerHTML = '<i class="fas fa-microphone"></i>';
-      btn.title = 'Голосовий пошук';
-    }
-  });
+const voiceButtons = document.querySelectorAll('.voice-search-btn');
+
+voiceButtons.forEach(btn => {
+  if (listening) {
+    btn.classList.add('listening');
+    btn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+    btn.title = 'Зупинити аудіопошук';
+  } else {
+    btn.classList.remove('listening');
+    btn.innerHTML = '<i class="fas fa-microphone"></i>';
+    btn.title = 'Голосовий пошук';
+  }
+});
 }
 
 // Добавление кнопок аудио поиска в UI
 function addVoiceSearchButtons() {
-  // Для десктопной версии
-  const searchContainer = document.querySelector('.search-container');
-  if (searchContainer) {
-    const voiceBtn = document.createElement('button');
-    voiceBtn.type = 'button';
-    voiceBtn.className = 'voice-search-btn';
-    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-    voiceBtn.title = 'Голосовий пошук';
-    voiceBtn.onclick = () => toggleVoiceSearch(false);
-    
-    const searchInput = document.getElementById('search');
-    if (searchInput) {
-      searchInput.parentNode.insertBefore(voiceBtn, searchInput.nextSibling);
-    }
+// Для десктопной версии
+const searchContainer = document.querySelector('.search-container');
+if (searchContainer) {
+  const voiceBtn = document.createElement('button');
+  voiceBtn.type = 'button';
+  voiceBtn.className = 'voice-search-btn';
+  voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+  voiceBtn.title = 'Голосовий пошук';
+  voiceBtn.onclick = () => toggleVoiceSearch(false);
+  
+  const searchInput = document.getElementById('search');
+  if (searchInput) {
+    searchInput.parentNode.insertBefore(voiceBtn, searchInput.nextSibling);
   }
+}
 
-  // Для мобильной версии
-  const searchMobileContainer = document.querySelector('.search-container-mobile');
-  if (searchMobileContainer) {
-    const voiceBtnMobile = document.createElement('button');
-    voiceBtnMobile.type = 'button';
-    voiceBtnMobile.className = 'voice-search-btn mobile';
-    voiceBtnMobile.innerHTML = '<i class="fas fa-microphone"></i>';
-    voiceBtnMobile.title = 'Голосовий пошук';
-    voiceBtnMobile.onclick = () => toggleVoiceSearch(true);
-    
-    const searchMobileInput = document.getElementById('search-mobile');
-    if (searchMobileInput) {
-      searchMobileInput.parentNode.insertBefore(voiceBtnMobile, searchMobileInput.nextSibling);
-    }
+// Для мобильной версии
+const searchMobileContainer = document.querySelector('.search-container-mobile');
+if (searchMobileContainer) {
+  const voiceBtnMobile = document.createElement('button');
+  voiceBtnMobile.type = 'button';
+  voiceBtnMobile.className = 'voice-search-btn mobile';
+  voiceBtnMobile.innerHTML = '<i class="fas fa-microphone"></i>';
+  voiceBtnMobile.title = 'Голосовий пошук';
+  voiceBtnMobile.onclick = () => toggleVoiceSearch(true);
+  
+  const searchMobileInput = document.getElementById('search-mobile');
+  if (searchMobileInput) {
+    searchMobileInput.parentNode.insertBefore(voiceBtnMobile, searchMobileInput.nextSibling);
   }
+}
 }
 
 // ===== КОНЕЦ АУДИО ПОИСКА =====
 
 // Настройка обработчиков поиска
 function setupSearchHandler() {
-  const searchInput = document.getElementById('search');
-  const searchMobileInput = document.getElementById('search-mobile');
-  let lastSearchValue = '';
+const searchInput = document.getElementById('search');
+const searchMobileInput = document.getElementById('search-mobile');
+let lastSearchValue = '';
+
+function handleSearch(value, isMobile = false) {
+  if (value === lastSearchValue) return;
   
-  function handleSearch(value, isMobile = false) {
-    if (value === lastSearchValue) return;
-    
-    clearTimeout(searchTimeout);
-    
-    searchTimeout = setTimeout(() => {
-      lastSearchValue = value;
-      currentFilters.search = value;
-      
-      if (value.length >= 1) {
-        showSearchSuggestions(value, isMobile);
-      } else {
-        showSearchHistorySuggestions(isMobile);
-      }
-      
-      applyFilters();
-    }, SEARCH_CONFIG.DEBOUNCE_DELAY);
-  }
+  clearTimeout(searchTimeout);
   
-  // Обработчик для десктопного поиска
-  if (searchInput) {
-    searchInput.addEventListener('input', function() {
-      const currentValue = this.value.trim();
-      handleSearch(currentValue, false);
-      if (searchMobileInput) {
-        searchMobileInput.value = currentValue;
-      }
-    });
+  searchTimeout = setTimeout(() => {
+    lastSearchValue = value;
+    currentFilters.search = value;
     
-    // Обработчик фокуса - показываем историю
-    searchInput.addEventListener('focus', function() {
-      if (this.value === '') {
-        showSearchHistorySuggestions(false);
-      }
-    });
+    if (value.length >= 1) {
+      showSearchSuggestions(value, isMobile);
+    } else {
+      showSearchHistorySuggestions(isMobile);
+    }
     
-    searchInput.addEventListener('keydown', function(e) {
-      const suggestionsContainer = document.getElementById('search-suggestions');
-      if (!suggestionsContainer || suggestionsContainer.style.display === 'none') return;
-      
-      const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion');
-      let activeSuggestion = suggestionsContainer.querySelector('.search-suggestion.active');
-      
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          if (!activeSuggestion) {
-            suggestions[0]?.classList.add('active');
-          } else {
-            activeSuggestion.classList.remove('active');
-            const next = activeSuggestion.nextElementSibling || suggestions[0];
-            next.classList.add('active');
-          }
-          break;
-          
-        case 'ArrowUp':
-          e.preventDefault();
-          if (!activeSuggestion) {
-            suggestions[suggestions.length - 1]?.classList.add('active');
-          } else {
-            activeSuggestion.classList.remove('active');
-            const prev = activeSuggestion.previousElementSibling || suggestions[suggestions.length - 1];
-            prev.classList.add('active');
-          }
-          break;
-          
-        case 'Enter':
-          e.preventDefault();
-          if (activeSuggestion) {
-            activeSuggestion.click();
-          } else {
-            // Сохраняем поиск в историю при нажатии Enter
-            saveToSearchHistory(this.value);
-          }
-          break;
-          
-        case 'Escape':
-          hideSearchSuggestions(false);
-          this.value = '';
-          currentFilters.search = '';
-          applyFilters();
-          break;
-      }
-    });
-  }
+    applyFilters();
+  }, SEARCH_CONFIG.DEBOUNCE_DELAY);
+}
+
+// Обработчик для десктопного поиска
+if (searchInput) {
+  searchInput.addEventListener('input', function() {
+    const currentValue = this.value.trim();
+    handleSearch(currentValue, false);
+    if (searchMobileInput) {
+      searchMobileInput.value = currentValue;
+    }
+  });
   
-  // Обработчик для мобильного поиска
-  if (searchMobileInput) {
-    searchMobileInput.addEventListener('input', function() {
-      const currentValue = this.value.trim();
-      handleSearch(currentValue, true);
-      if (searchInput) {
-        searchInput.value = currentValue;
-      }
-    });
-    
-    searchMobileInput.addEventListener('focus', function() {
-      if (this.value === '') {
-        showSearchHistorySuggestions(true);
-      }
-    });
-    
-    searchMobileInput.addEventListener('keydown', function(e) {
-      const suggestionsContainer = document.getElementById('search-suggestions-mobile');
-      if (!suggestionsContainer || suggestionsContainer.style.display === 'none') return;
-      
-      const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion');
-      let activeSuggestion = suggestionsContainer.querySelector('.search-suggestion.active');
-      
-      switch (e.key) {
-        case 'Enter':
-          e.preventDefault();
-          if (activeSuggestion) {
-            activeSuggestion.click();
-          } else {
-            // Сохраняем поиск в историю при нажатии Enter
-            saveToSearchHistory(this.value);
-          }
-          break;
-          
-        case 'Escape':
-          hideSearchSuggestions(true);
-          this.value = '';
-          currentFilters.search = '';
-          applyFilters();
-          break;
-      }
-    });
-  }
+  // Обработчик фокуса - показываем историю
+  searchInput.addEventListener('focus', function() {
+    if (this.value === '') {
+      showSearchHistorySuggestions(false);
+    }
+  });
   
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.search-container') && !e.target.closest('.search-container-mobile')) {
-      hideSearchSuggestions(false);
-      hideSearchSuggestions(true);
+  searchInput.addEventListener('keydown', function(e) {
+    const suggestionsContainer = document.getElementById('search-suggestions');
+    if (!suggestionsContainer || suggestionsContainer.style.display === 'none') return;
+    
+    const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion');
+    let activeSuggestion = suggestionsContainer.querySelector('.search-suggestion.active');
+    
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        if (!activeSuggestion) {
+          suggestions[0]?.classList.add('active');
+        } else {
+          activeSuggestion.classList.remove('active');
+          const next = activeSuggestion.nextElementSibling || suggestions[0];
+          next.classList.add('active');
+        }
+        break;
+        
+      case 'ArrowUp':
+        e.preventDefault();
+        if (!activeSuggestion) {
+          suggestions[suggestions.length - 1]?.classList.add('active');
+        } else {
+          activeSuggestion.classList.remove('active');
+          const prev = activeSuggestion.previousElementSibling || suggestions[suggestions.length - 1];
+          prev.classList.add('active');
+        }
+        break;
+        
+      case 'Enter':
+        e.preventDefault();
+        if (activeSuggestion) {
+          activeSuggestion.click();
+        } else {
+          // Сохраняем поиск в историю при нажатии Enter
+          saveToSearchHistory(this.value);
+        }
+        break;
+        
+      case 'Escape':
+        hideSearchSuggestions(false);
+        this.value = '';
+        currentFilters.search = '';
+        applyFilters();
+        break;
     }
   });
 }
 
+// Обработчик для мобильного поиска
+if (searchMobileInput) {
+  searchMobileInput.addEventListener('input', function() {
+    const currentValue = this.value.trim();
+    handleSearch(currentValue, true);
+    if (searchInput) {
+      searchInput.value = currentValue;
+    }
+  });
+  
+  searchMobileInput.addEventListener('focus', function() {
+    if (this.value === '') {
+      showSearchHistorySuggestions(true);
+    }
+  });
+  
+  searchMobileInput.addEventListener('keydown', function(e) {
+    const suggestionsContainer = document.getElementById('search-suggestions-mobile');
+    if (!suggestionsContainer || suggestionsContainer.style.display === 'none') return;
+    
+    const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion');
+    let activeSuggestion = suggestionsContainer.querySelector('.search-suggestion.active');
+    
+    switch (e.key) {
+      case 'Enter':
+        e.preventDefault();
+        if (activeSuggestion) {
+          activeSuggestion.click();
+        } else {
+          // Сохраняем поиск в историю при нажатии Enter
+          saveToSearchHistory(this.value);
+        }
+        break;
+        
+      case 'Escape':
+        hideSearchSuggestions(true);
+        this.value = '';
+        currentFilters.search = '';
+        applyFilters();
+        break;
+    }
+  });
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-container') && !e.target.closest('.search-container-mobile')) {
+    hideSearchSuggestions(false);
+    hideSearchSuggestions(true);
+  }
+});
+}
+
 // Добавление CSS для улучшенного поиска
 function addSearchStyles() {
-  const style = document.createElement('style');
-  style.textContent = `
+const style = document.createElement('style');
+style.textContent = `
+  .search-container {
+    position: relative;
+    width: 100%;
+  }
+  
+  .search-container-mobile {
+    position: relative;
+    width: 100%;
+    margin: 10px 0;
+  }
+  
+  .search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+  }
+  
+  .mobile-suggestions {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 10px;
+    right: 10px;
+    max-height: 50vh;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .search-suggestion {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+  }
+  
+  .search-suggestion:hover,
+  .search-suggestion.active {
+    background-color: #f8f9fa;
+  }
+  
+  .search-suggestion:last-child {
+    border-bottom: none;
+  }
+  
+  .suggestion-text {
+    flex: 1;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  
+  .suggestion-type {
+    font-size: 0.75em;
+    color: #6c757d;
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  
+  .suggestion-action {
+    background-color: #f8f9fa;
+    font-weight: bold;
+  }
+  
+  .suggestion-clear-history {
+    border-top: 1px solid #eee;
+    color: #666;
+    font-size: 0.9em;
+  }
+  
+  .clear-history-btn {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-left: auto;
+  }
+  
+  .clear-history-btn:hover {
+    background: #f0f0f0;
+    color: #e74c3c;
+  }
+  
+  .search-suggestion-header {
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: #6c757d;
+  }
+  
+  .clear-all-history-btn {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 0.75em;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  
+  .clear-all-history-btn:hover {
+    background: #f8d7da;
+  }
+  
+  /* Стили для аудио поиска */
+  .voice-search-btn {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    z-index: 2;
+  }
+  
+  .voice-search-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+  }
+  
+  .voice-search-btn.listening {
+    background: #e74c3c;
+    color: white;
+    animation: pulse 1.5s infinite;
+  }
+  
+  .voice-search-btn.mobile {
+    right: 40px;
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+    }
+  }
+  
+  /* Адаптация полей поиска под кнопки */
+  .search-container input,
+  .search-container-mobile input {
+    padding-right: 80px !important;
+  }
+  
+  @media (max-width: 768px) {
     .search-container {
-      position: relative;
-      width: 100%;
-    }
-    
-    .search-container-mobile {
-      position: relative;
-      width: 100%;
-      margin: 10px 0;
-    }
-    
-    .search-suggestions {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 1000;
-      max-height: 300px;
-      overflow-y: auto;
       display: none;
     }
     
-    .mobile-suggestions {
-      position: fixed;
-      top: auto;
-      bottom: 0;
-      left: 10px;
-      right: 10px;
-      max-height: 50vh;
-      border-radius: 8px 8px 0 0;
+    .voice-search-btn:not(.mobile) {
+      display: none;
     }
-    
-    .search-suggestion {
-      padding: 12px 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-bottom: 1px solid #f0f0f0;
-      transition: background-color 0.2s;
-    }
-    
-    .search-suggestion:hover,
-    .search-suggestion.active {
-      background-color: #f8f9fa;
-    }
-    
-    .search-suggestion:last-child {
-      border-bottom: none;
-    }
-    
-    .suggestion-text {
-      flex: 1;
-      font-weight: 500;
-      font-size: 14px;
-    }
-    
-    .suggestion-type {
-      font-size: 0.75em;
-      color: #6c757d;
-      background: #e9ecef;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    
-    .suggestion-action {
-      background-color: #f8f9fa;
-      font-weight: bold;
-    }
-    
-    .suggestion-clear-history {
-      border-top: 1px solid #eee;
-      color: #666;
-      font-size: 0.9em;
-    }
-    
-    .clear-history-btn {
-      background: none;
-      border: none;
-      color: #999;
-      cursor: pointer;
-      padding: 2px 5px;
-      border-radius: 3px;
-      margin-left: auto;
-    }
-    
-    .clear-history-btn:hover {
-      background: #f0f0f0;
-      color: #e74c3c;
-    }
-    
-    .search-suggestion-header {
-      padding: 8px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f8f9fa;
-      border-bottom: 1px solid #e9ecef;
-      font-size: 0.8em;
-      font-weight: 600;
-      color: #6c757d;
-    }
-    
-    .clear-all-history-btn {
-      background: none;
-      border: none;
-      color: #e74c3c;
-      cursor: pointer;
-      font-size: 0.75em;
-      padding: 2px 6px;
-      border-radius: 3px;
-    }
-    
-    .clear-all-history-btn:hover {
-      background: #f8d7da;
-    }
-    
-    /* Стили для аудио поиска */
-    .voice-search-btn {
-      position: absolute;
-      right: 40px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: #666;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-      z-index: 2;
-    }
-    
-    .voice-search-btn:hover {
-      background: #f0f0f0;
-      color: #333;
-    }
-    
-    .voice-search-btn.listening {
-      background: #e74c3c;
-      color: white;
-      animation: pulse 1.5s infinite;
+  }
+  
+  @media (min-width: 769px) {
+    .search-container-mobile {
+      display: none;
     }
     
     .voice-search-btn.mobile {
-      right: 40px;
+      display: none;
     }
-    
-    @keyframes pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
-      }
-      70% {
-        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
-      }
-    }
-    
-    /* Адаптация полей поиска под кнопки */
-    .search-container input,
-    .search-container-mobile input {
-      padding-right: 80px !important;
-    }
-    
-    @media (max-width: 768px) {
-      .search-container {
-        display: none;
-      }
-      
-      .voice-search-btn:not(.mobile) {
-        display: none;
-      }
-    }
-    
-    @media (min-width: 769px) {
-      .search-container-mobile {
-        display: none;
-      }
-      
-      .voice-search-btn.mobile {
-        display: none;
-      }
-    }
-  `;
-  document.head.appendChild(style);
+  }
+`;
+document.head.appendChild(style);
 }
 
 // Инициализация улучшенного поиска
 function initEnhancedSearch() {
-  addSearchStyles();
-  setupSearchHandler();
-  initVoiceSearch();
-  addVoiceSearchButtons();
+addSearchStyles();
+setupSearchHandler();
+initVoiceSearch();
+addVoiceSearchButtons();
 }
 
 // ===== КОНЕЦ УЛУЧШЕННОЙ СИСТЕМЫ ПОИСКА =====
@@ -1159,7 +1160,8 @@ let currentFilters = {
   sort: 'default',
   search: '',
   availability: '',
-  source: ''
+  source: '',
+  gender: 'all' // Додано
 };
 
 // Глобальная переменная для рейтинга
@@ -1234,7 +1236,7 @@ function loadProductsFromJson() {
       fetch(file)
           .then(response => {
               if (!response.ok) {
-                  console.warn(`Файл ${file} не найден, пропускаем`);
+                  console.warn(`Файл ${file} не знайдено, пропускаємо`);
                   return [];
               }
               return response.json();
@@ -1247,7 +1249,7 @@ function loadProductsFromJson() {
               }));
           })
           .catch(error => {
-              console.warn(`Ошибка загрузки файла ${file}:`, error);
+              console.warn(`Помилка завантаження файлу ${file}:`, error);
               return [];
           })
   );
@@ -1427,6 +1429,13 @@ function initApp() {
     document.getElementById("feed-url").value = feedUrl;
   }
   
+  // Восстановление фильтра по полу
+  const savedGenderFilter = localStorage.getItem(GENDER_FILTER_KEY);
+  if (savedGenderFilter) {
+    currentFilters.gender = savedGenderFilter;
+    updateGenderButtons(savedGenderFilter);
+  }
+  
   document.getElementById("year").innerText = new Date().getFullYear();
   
   document.getElementById('category').addEventListener('change', function() {
@@ -1604,8 +1613,8 @@ function loadProducts() {
       }
     })
     .catch((error) => {
-      console.error("", error);
-      showNotification("", );
+      console.error("");
+      showNotification("");
       isProductsLoading = false;
       
       const data = localStorage.getItem('products_backup');
@@ -1728,6 +1737,53 @@ function getFilteredProducts() {
     );
   }
   
+  // Фільтр по полу (додано)
+  if (currentFilters.gender && currentFilters.gender !== 'all') {
+    filteredProducts = filteredProducts.filter(product => {
+      // Если у товара есть явное поле gender
+      if (product.gender) {
+        return product.gender === currentFilters.gender || 
+               product.gender === 'unisex' || 
+               product.gender === 'both';
+      }
+      
+      // Если нет явного поля gender, определяем по категории/названию
+      const productTitle = product.title ? product.title.toLowerCase() : '';
+      const productCategory = product.category ? product.category.toLowerCase() : '';
+      const productDescription = product.description ? product.description.toLowerCase() : '';
+      
+      // Ключевые слова для девочек
+      const girlKeywords = [
+        'лялька', 'барбі', 'принцеса', 'кукла', 'салон краси',
+        'модниця', 'набір косметики', 'будиночок', 'чохол',
+        'аксесуар для волосся', 'браслет', 'намисто', 'віночок',
+        'пони', 'фея', 'русалка', 'серце', 'квітка', 'рожевий'
+      ];
+      
+      // Ключевые слова для мальчиков
+      const boyKeywords = [
+        'конструктор', 'лего', 'машинка', 'трансформер',
+        'робот', 'супергерой', 'бетмен', 'спайдермен',
+        'бластер', 'зброя', 'танк', 'літак', 'корабель',
+        'спорт', 'м\'яч', 'ракетка', 'гірський велосипед',
+        'робототехніка', 'експеримент', 'космос', 'динозавр'
+      ];
+      
+      // Проверяем наличие ключевых слов
+      const allText = `${productTitle} ${productCategory} ${productDescription}`;
+      
+      if (currentFilters.gender === 'girl') {
+        return girlKeywords.some(keyword => allText.includes(keyword)) ||
+               !boyKeywords.some(keyword => allText.includes(keyword));
+      } else if (currentFilters.gender === 'boy') {
+        return boyKeywords.some(keyword => allText.includes(keyword)) ||
+               !girlKeywords.some(keyword => allText.includes(keyword));
+      }
+      
+      return true;
+    });
+  }
+  
   switch (currentFilters.sort) {
     case 'price-asc':
       filteredProducts.sort((a, b) => a.price - b.price);
@@ -1757,6 +1813,34 @@ function getFilteredProducts() {
 }
 
 // ===== КІНЕЦЬ ФУНКЦІЇ ПАГІНАЦІЇ =====
+
+// ===== ФУНКЦІЇ ФІЛЬТРАЦІЇ ПО ПОЛУ =====
+
+function filterByGender(gender) {
+  currentFilters.gender = gender;
+  localStorage.setItem(GENDER_FILTER_KEY, gender);
+  
+  // Обновляем активные кнопки
+  updateGenderButtons(gender);
+  
+  // Сбрасываем страницу и применяем фильтры
+  currentPage = 1;
+  applyFilters();
+}
+
+function updateGenderButtons(activeGender) {
+  const genderButtons = document.querySelectorAll('.gender-btn');
+  genderButtons.forEach(btn => {
+    const gender = btn.getAttribute('onclick').match(/filterByGender\('(\w+)'\)/)[1];
+    if (gender === activeGender) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+// ===== КІНЕЦЬ ФУНКЦІЙ ФІЛЬТРАЦІЇ ПО ПОЛУ =====
 
 // Функція для завантаження XML-фіду
 async function loadFromFeed() {
@@ -2343,8 +2427,13 @@ function resetFilters() {
     sort: 'default',
     search: '',
     availability: '',
-    source: ''
+    source: '',
+    gender: 'all' // Додано
   };
+  
+  // Сбрасываем кнопки фильтра по полу
+  updateGenderButtons('all');
+  localStorage.removeItem(GENDER_FILTER_KEY);
   
   applyFilters();
 }
@@ -2994,7 +3083,7 @@ function openAuthModal() {
   setTimeout(optimizeModalForMobile, 100);
 }
 
-// Переключення вкладок авторизации
+// Переключенние вкладок авторизации
 function switchAuthTab(tab) {
   const loginForm = document.getElementById("login-form");
   const registerForm = document.getElementById("register-form");

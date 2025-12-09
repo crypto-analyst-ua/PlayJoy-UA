@@ -309,6 +309,13 @@
                     <button class="source-tab" role="tab" onclick="switchSource('toys1.json')" aria-selected="false">Розвиваючі іграшки для малюків</button>
                     <button class="source-tab" role="tab" onclick="switchSource('toys2.json')" aria-selected="false">Ляльки та конструктори</button>
                 </div>
+                
+                <div class="gender-filter" style="margin: 15px 0;">
+                    <button class="gender-btn active" onclick="filterByGender('all')">Всі товари</button>
+                    <button class="gender-btn" onclick="filterByGender('girl')">Для дівчаток</button>
+                    <button class="gender-btn" onclick="filterByGender('boy')">Для хлопчиків</button>
+                </div>
+                
                 <div class="products-info">
                     <span id="products-count" aria-live="polite"></span>
                     <div class="view-options">
