@@ -38,6 +38,53 @@ const VIEW_MODE_KEY = "children_toys_view_mode";
 const ADMINS_STORAGE_KEY = "children_toys_admins";
 const GENDER_FILTER_KEY = "children_toys_gender_filter"; // Додано
 
+// ===== ФУНКЦИЯ ДЛЯ ВХОДА ЧЕРЕЗ GOOGLE =====
+function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    
+    // Добавляем дополнительные scopes при необходимости
+    provider.addScope('profile');
+    provider.addScope('email');
+    
+    auth.signInWithPopup(provider)
+        .then((result) => {
+            // Успешный вход
+            const user = result.user;
+            
+            // Проверяем, новый ли это пользователь
+            const isNewUser = result.additionalUserInfo?.isNewUser || false;
+            
+            if (isNewUser) {
+                showNotification("Реєстрація через Google успішна!");
+            } else {
+                showNotification("Вхід через Google успішний!");
+            }
+            
+            closeModal();
+            
+            // Проверяем права администратора после входа
+            checkAdminStatus(user.uid);
+        })
+        .catch((error) => {
+            console.error("Помилка входу через Google: ", error);
+            
+            let errorMessage = "Помилка входу через Google";
+            switch (error.code) {
+                case 'auth/popup-closed-by-user':
+                    errorMessage = "Вікно авторизації закрито користувачем";
+                    break;
+                case 'auth/cancelled-popup-request':
+                    errorMessage = "Запит авторизації скасовано";
+                    break;
+                case 'auth/popup-blocked':
+                    errorMessage = "Вспливаюче вікно заблоковано браузером. Дозвольте спливаючі вікна для цього сайту";
+                    break;
+            }
+            
+            showNotification(errorMessage, "error");
+        });
+}
+
 // ===== СЛОВНИК ПЕРЕКЛАДУ КАТЕГОРІЙ =====
 const categoryTranslations = {
     "Конструкторы": "Конструктори",
@@ -3091,7 +3138,7 @@ function closeModal() {
   }
 }
 
-// Відкриття модального вікна авторизації
+// ===== ОБНОВЛЕННАЯ ФУНКЦИЯ АВТОРИЗАЦИИ С GOOGLE =====
 function openAuthModal() {
   const modalContent = document.getElementById("modal-content");
   modalContent.innerHTML = `
@@ -3102,6 +3149,16 @@ function openAuthModal() {
       <div class="auth-tab" onclick="switchAuthTab('register')">Реєстрація</div>
       <div class="auth-tab" onclick="switchAuthTab('admin')">Адміністратор</div>
     </div>
+    
+    <div class="social-auth">
+      <button class="btn btn-google" onclick="signInWithGoogle()">
+        <i class="fab fa-google"></i> Увійти через Google
+      </button>
+      <div class="auth-divider">
+        <span>або</span>
+      </div>
+    </div>
+    
     <form id="login-form" onsubmit="login(event)">
       <div class="form-group">
         <label>Email</label>
@@ -3113,6 +3170,7 @@ function openAuthModal() {
       </div>
       <button type="submit" class="btn btn-detail">Увійти</button>
     </form>
+    
     <form id="register-form" style="display:none;" onsubmit="register(event)">
       <div class="form-group">
         <label>Ім'я</label>
@@ -3128,6 +3186,7 @@ function openAuthModal() {
       </div>
       <button type="submit" class="btn btn-detail">Зареєструватися</button>
     </form>
+    
     <div id="admin-auth-form" style="display:none;">
       <p>Для доступу до панелі адміністратора введіть пароль:</p>
       <div class="form-group">
@@ -3139,16 +3198,15 @@ function openAuthModal() {
   `;
   
   openModal();
-  
   setTimeout(optimizeModalForMobile, 100);
 }
 
-// Переключенние вкладок авторизации
 function switchAuthTab(tab) {
   const loginForm = document.getElementById("login-form");
   const registerForm = document.getElementById("register-form");
   const adminForm = document.getElementById("admin-auth-form");
   const tabs = document.querySelectorAll(".auth-tab");
+  const socialAuth = document.querySelector(".social-auth");
   
   tabs.forEach(tab => tab.classList.remove('active'));
   
@@ -3156,21 +3214,23 @@ function switchAuthTab(tab) {
     loginForm.style.display = 'block';
     registerForm.style.display = 'none';
     adminForm.style.display = 'none';
+    socialAuth.style.display = 'block';
     tabs[0].classList.add('active');
   } else if (tab === 'register') {
     loginForm.style.display = 'none';
     registerForm.style.display = 'block';
     adminForm.style.display = 'none';
+    socialAuth.style.display = 'block';
     tabs[1].classList.add('active');
   } else if (tab === 'admin') {
     loginForm.style.display = 'none';
     registerForm.style.display = 'none';
     adminForm.style.display = 'block';
+    socialAuth.style.display = 'none';
     tabs[2].classList.add('active');
   }
 }
 
-// Вхід в систему
 function login(event) {
   event.preventDefault();
   const email = event.target.querySelector('input[type="email"]').value;
@@ -3195,7 +3255,6 @@ function login(event) {
     });
 }
 
-// Реєстрація
 function register(event) {
   event.preventDefault();
   const name = event.target.querySelector('input[type="text"]').value;
@@ -3204,7 +3263,6 @@ function register(event) {
   
   auth.createUserWithEmailAndPassword(email, password)
     .then((userCredential) => {
-      // Оновлюємо профіль користувача
       return userCredential.user.updateProfile({
         displayName: name
       });
@@ -3219,7 +3277,6 @@ function register(event) {
     });
 }
 
-// ===== УЛУЧШЕННАЯ ФУНКЦИЯ ПРОВЕРКИ ПАРОЛЯ АДМИНИСТРАТОРА =====
 function verifyAdminPassword() {
   const password = document.getElementById("admin-password").value;
   if (password === ADMIN_PASSWORD) {
@@ -3229,14 +3286,12 @@ function verifyAdminPassword() {
       return;
     }
     
-    // Зберігаємо користувача як адміністратора в Firestore
     const adminRef = db.collection("admins").doc(currentUser.uid);
     adminRef.set({
       email: currentUser.email,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     })
     .then(() => {
-      // Также сохраняем в localStorage для быстрого доступа в UI
       const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
       admins[currentUser.uid] = true;
       localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
@@ -3246,14 +3301,11 @@ function verifyAdminPassword() {
       showNotification("Права адміністратора отримані");
       closeModal();
       
-      // Завантажуємо замовлення для адмін-панелі
       loadAdminOrders();
       
-      // Показуємо лічильник переглядів
       document.getElementById("page-views-container").style.display = "block";
       setupPageCounter();
       
-      // Добавляем вкладку для модерации отзывов
       addReviewsTabIfNotExists();
     })
     .catch((error) => {
@@ -3263,6 +3315,151 @@ function verifyAdminPassword() {
   } else {
     showNotification("Невірний пароль адміністратора", "error");
   }
+}
+
+function logout() {
+  auth.signOut()
+    .then(() => {
+      showNotification("Вихід виконано успішно");
+    })
+    .catch(error => {
+      console.error("Помилка виходу: ", error);
+      showNotification("Помилка виходу", "error");
+    });
+}
+
+function checkAdminStatus(userId) {
+  db.collection("admins").doc(userId).get()
+    .then((doc) => {
+      if (doc.exists) {
+        document.getElementById("admin-panel").style.display = "block";
+        adminMode = true;
+        loadAdminOrders();
+        
+        document.getElementById("page-views-container").style.display = "block";
+        setupPageCounter();
+        
+        addReviewsTabIfNotExists();
+      }
+    })
+    .catch((error) => {
+      console.error("Помилка перевірки прав адміністратора: ", error);
+    });
+}
+
+// Функция открытия профиля пользователя
+function openProfile() {
+    if (!currentUser) {
+        openAuthModal();
+        showNotification("Увійдіть в систему для перегляду профілю", "warning");
+        return;
+    }
+
+    const modalContent = document.getElementById("modal-content");
+    modalContent.innerHTML = `
+        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <h3>Профіль користувача</h3>
+        <div class="profile-container">
+            <div class="profile-info">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="profile-details">
+                    <p><strong>Ім'я:</strong> <span id="profile-display-name">${currentUser.displayName || 'Не вказано'}</span></p>
+                    <p><strong>Email:</strong> <span id="profile-email">${currentUser.email || 'Не вказано'}</span></p>
+                    <p><strong>ID:</strong> <span id="profile-uid">${currentUser.uid}</span></p>
+                    <p><strong>Дата реєстрації:</strong> <span id="profile-created">${currentUser.metadata.creationTime ? new Date(currentUser.metadata.creationTime).toLocaleDateString('uk-UA') : 'Невідомо'}</span></p>
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                <h4>Налаштування профілю</h4>
+                <form onsubmit="updateProfile(event)">
+                    <div class="form-group">
+                        <label>Ім'я та прізвище</label>
+                        <input type="text" id="profile-name-input" value="${currentUser.displayName || ''}" placeholder="Введіть ваше ім'я">
+                    </div>
+                    <div class="form-group">
+                        <label>Новий пароль</label>
+                        <input type="password" id="profile-password-input" placeholder="Залиште порожнім, щоб не змінювати">
+                    </div>
+                    <button type="submit" class="btn btn-detail">Оновити профіль</button>
+                </form>
+            </div>
+            
+            <div class="profile-stats">
+                <h4>Статистика</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="stat-value" id="profile-orders-count">0</span>
+                        <span class="stat-label">Замовлень</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="far fa-heart"></i>
+                        <span class="stat-value" id="profile-favorites-count">${Object.keys(favorites).length}</span>
+                        <span class="stat-label">Обраних товарів</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    loadUserOrderStats();
+    
+    openModal();
+    setTimeout(optimizeModalForMobile, 100);
+}
+
+function updateProfile(event) {
+  event.preventDefault();
+  
+  const newName = document.getElementById('profile-name-input').value.trim();
+  const newPassword = document.getElementById('profile-password-input').value.trim();
+  
+  const promises = [];
+  
+  if (newName && newName !== currentUser.displayName) {
+      promises.push(
+          currentUser.updateProfile({
+              displayName: newName
+          })
+      );
+  }
+  
+  if (newPassword) {
+      promises.push(
+          currentUser.updatePassword(newPassword)
+      );
+  }
+  
+  if (promises.length === 0) {
+      showNotification("Немає змін для оновлення", "info");
+      return;
+  }
+  
+  Promise.all(promises)
+      .then(() => {
+          showNotification("Профіль успішно оновлено");
+          document.getElementById('user-name').textContent = newName || currentUser.email;
+          document.getElementById('profile-display-name').textContent = newName || 'Не вказано';
+          closeModal();
+      })
+      .catch(error => {
+          console.error("Помилка оновлення профілю: ", error);
+          let errorMessage = "Помилка оновлення профілю";
+          
+          switch (error.code) {
+              case 'auth/requires-recent-login':
+                  errorMessage = "Для зміни пароля потрібно повторно увійти в систему";
+                  break;
+              case 'auth/weak-password':
+                  errorMessage = "Пароль занадто слабкий";
+                  break;
+          }
+          
+          showNotification(errorMessage, "error");
+      });
 }
 
 // ===== УЛУЧШЕННАЯ ФУНКЦИЯ ВВОДА ПАРОЛЯ АДМИНИСТРАТОРА =====
@@ -4156,127 +4353,6 @@ function deleteProduct(productId) {
         showNotification("Помилка видалення товару", "error");
       });
   }
-}
-
-// ===== ФУНКЦИИ ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ =====
-
-// Функция открытия профиля пользователя
-function openProfile() {
-    if (!currentUser) {
-        openAuthModal();
-        showNotification("Увійдіть в систему для перегляду профілю", "warning");
-        return;
-    }
-
-    const modalContent = document.getElementById("modal-content");
-    modalContent.innerHTML = `
-        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-        <h3>Профіль користувача</h3>
-        <div class="profile-container">
-            <div class="profile-info">
-                <div class="profile-avatar">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-                <div class="profile-details">
-                    <p><strong>Ім'я:</strong> <span id="profile-display-name">${currentUser.displayName || 'Не вказано'}</span></p>
-                    <p><strong>Email:</strong> <span id="profile-email">${currentUser.email || 'Не вказано'}</span></p>
-                    <p><strong>ID:</strong> <span id="profile-uid">${currentUser.uid}</span></p>
-                    <p><strong>Дата реєстрації:</strong> <span id="profile-created">${currentUser.metadata.creationTime ? new Date(currentUser.metadata.creationTime).toLocaleDateString('uk-UA') : 'Невідомо'}</span></p>
-                </div>
-            </div>
-            
-            <div class="profile-actions">
-                <h4>Налаштування профілю</h4>
-                <form onsubmit="updateProfile(event)">
-                    <div class="form-group">
-                        <label>Ім'я та прізвище</label>
-                        <input type="text" id="profile-name-input" value="${currentUser.displayName || ''}" placeholder="Введіть ваше ім'я">
-                    </div>
-                    <div class="form-group">
-                        <label>Новий пароль</label>
-                        <input type="password" id="profile-password-input" placeholder="Залиште порожнім, щоб не змінювати">
-                    </div>
-                    <button type="submit" class="btn btn-detail">Оновити профіль</button>
-                </form>
-            </div>
-            
-            <div class="profile-stats">
-                <h4>Статистика</h4>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="stat-value" id="profile-orders-count">0</span>
-                        <span class="stat-label">Замовлень</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="far fa-heart"></i>
-                        <span class="stat-value" id="profile-favorites-count">${Object.keys(favorites).length}</span>
-                        <span class="stat-label">Обраних товарів</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Загружаем статистику заказов
-    loadUserOrderStats();
-    
-    openModal();
-    setTimeout(optimizeModalForMobile, 100);
-}
-
-// Функция обновления профиля
-function updateProfile(event) {
-    event.preventDefault();
-    
-    const newName = document.getElementById('profile-name-input').value.trim();
-    const newPassword = document.getElementById('profile-password-input').value.trim();
-    
-    const promises = [];
-    
-    // Обновляем имя, если оно изменилось
-    if (newName && newName !== currentUser.displayName) {
-        promises.push(
-            currentUser.updateProfile({
-                displayName: newName
-            })
-        );
-    }
-    
-    // Обновляем пароль, если введен новый
-    if (newPassword) {
-        promises.push(
-            currentUser.updatePassword(newPassword)
-        );
-    }
-    
-    if (promises.length === 0) {
-        showNotification("Немає змін для оновлення", "info");
-        return;
-    }
-    
-    Promise.all(promises)
-        .then(() => {
-            showNotification("Профіль успішно оновлено");
-            document.getElementById('user-name').textContent = newName || currentUser.email;
-            document.getElementById('profile-display-name').textContent = newName || 'Не вказано';
-            closeModal();
-        })
-        .catch(error => {
-            console.error("Помилка оновлення профілю: ", error);
-            let errorMessage = "Помилка оновлення профілю";
-            
-            switch (error.code) {
-                case 'auth/requires-recent-login':
-                    errorMessage = "Для зміни пароля потрібно повторно увійти в систему";
-                    break;
-                case 'auth/weak-password':
-                    errorMessage = "Пароль занадто слабкий";
-                    break;
-            }
-            
-            showNotification(errorMessage, "error");
-        });
 }
 
 // Функция загрузки статистики заказов пользователя
