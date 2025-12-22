@@ -32,7 +32,7 @@
     <link rel="manifest" href="/site.webmanifest">
     <meta name="theme-color" content="#FF6B8B">
 
-    <!-- Стили для черного текста с белой обводкой -->
+    <!-- Стили для черного текста с белой обводкой и карточек категорий -->
 <style>
     .logo-text .logo-name {
         color: #000000 !important;
@@ -82,6 +82,136 @@
     .contact-info .fa-facebook { color: #1877F2; }
     .contact-info .fa-instagram { color: #E4405F; }
     .contact-info .fa-phone-alt { color: #2ecc71; }
+
+    /* Стили для карточек категорий - уменьшенный размер */
+    .source-tabs {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 15px 0;
+    }
+
+    .gender-filter {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 15px 0;
+    }
+
+    .category-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 140px;
+        height: 120px;
+        background: linear-gradient(135deg, #FF9A9E 0%, #FAD0C4 100%);
+        border-radius: 12px;
+        padding: 15px 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        border: 2px solid transparent;
+    }
+
+    .category-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+        border-color: #FF6B8B;
+    }
+
+    .category-card.active {
+        background: linear-gradient(135deg, #FF6B8B 0%, #FF8E53 100%);
+        border-color: #FF6B8B;
+        box-shadow: 0 6px 15px rgba(255, 107, 139, 0.25);
+    }
+
+    .category-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .category-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #fff;
+        line-height: 1.2;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Цвета для разных категорий */
+    .source-tabs .category-card:nth-child(1) { /* Все игрушки */
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    }
+
+    .source-tabs .category-card:nth-child(2) { /* Развивающие */
+        background: linear-gradient(135deg, #42e695 0%, #3bb2b8 100%);
+    }
+
+    .source-tabs .category-card:nth-child(3) { /* Фантазия */
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .gender-filter .category-card:nth-child(1) { /* Все товары */
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .gender-filter .category-card:nth-child(2) { /* Для девочек */
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .gender-filter .category-card:nth-child(3) { /* Для мальчиков */
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .source-tabs,
+        .gender-filter {
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .category-card {
+            width: 120px;
+            height: 110px;
+            padding: 12px 8px;
+        }
+        
+        .category-icon {
+            font-size: 1.7rem;
+            margin-bottom: 8px;
+        }
+        
+        .category-title {
+            font-size: 0.75rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .source-tabs,
+        .gender-filter {
+            gap: 8px;
+        }
+        
+        .category-card {
+            width: 100px;
+            height: 95px;
+            padding: 10px 6px;
+        }
+        
+        .category-icon {
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+        
+        .category-title {
+            font-size: 0.65rem;
+        }
+    }
 </style>
 
     <!-- Объединенная JSON-LD Schema -->
@@ -302,16 +432,49 @@
         <section role="main">
             <div class="products-header">
                 <h1 id="products-title">Каталог іграшок для дітей та підлітків — купити в Україні з доставкою</h1>
+                
+                <!-- Обновленные карточки категорий с логотипами -->
                 <div class="source-tabs" role="tablist">
-                    <button class="source-tab active" role="tab" onclick="switchSource('all')" aria-selected="true">Всі іграшки</button>
-                    <button class="source-tab" role="tab" onclick="switchSource('toys1.json')" aria-selected="false">Розвиваючі іграшки для малюків</button>
-                    <button class="source-tab" role="tab" onclick="switchSource('toys2.json')" aria-selected="false">Іграшки для гри та фантазії</button>
+                    <div class="category-card active" role="tab" onclick="switchSource('all')" aria-selected="true">
+                        <div class="category-icon">
+                            <i class="fas fa-cubes"></i>
+                        </div>
+                        <div class="category-title">Всі іграшки</div>
+                    </div>
+                    <div class="category-card" role="tab" onclick="switchSource('toys1.json')" aria-selected="false">
+                        <div class="category-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="category-title">Розвиваючі іграшки для малюків</div>
+                    </div>
+                    <div class="category-card" role="tab" onclick="switchSource('toys2.json')" aria-selected="false">
+                        <div class="category-icon">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <div class="category-title">Іграшки для гри та фантазії</div>
+                    </div>
                 </div>
                 
+                <!-- Обновленные карточки гендерных фильтров -->
                 <div class="gender-filter" style="margin: 15px 0;">
-                    <button class="gender-btn active" onclick="filterByGender('all')">Всі товари</button>
-                    <button class="gender-btn" onclick="filterByGender('girl')">Для дівчаток</button>
-                    <button class="gender-btn" onclick="filterByGender('boy')">Для хлопчиків</button>
+                    <div class="category-card active" onclick="filterByGender('all')">
+                        <div class="category-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <div class="category-title">Універсальні іграшки</div>
+                    </div>
+                    <div class="category-card" onclick="filterByGender('girl')">
+                        <div class="category-icon">
+                            <i class="fas fa-female"></i>
+                        </div>
+                        <div class="category-title">Для дівчаток</div>
+                    </div>
+                    <div class="category-card" onclick="filterByGender('boy')">
+                        <div class="category-icon">
+                            <i class="fas fa-male"></i>
+                        </div>
+                        <div class="category-title">Для хлопчиків</div>
+                    </div>
                 </div>
                 
                 <div class="products-info">
