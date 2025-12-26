@@ -36,7 +36,17 @@ const FEED_URL_KEY = "children_toys_feed_url";
 const FEED_UPDATE_TIME_KEY = "children_toys_feed_update";
 const VIEW_MODE_KEY = "children_toys_view_mode";
 const ADMINS_STORAGE_KEY = "children_toys_admins";
-const GENDER_FILTER_KEY = "children_toys_gender_filter"; // Додано
+const GENDER_FILTER_KEY = "children_toys_gender_filter";
+const AD_CONFIG = {
+  MAX_AD_PRODUCTS: 8,
+  SHOW_AD_EVERY: 4,
+  AD_TYPES: {
+    DISCOUNT: 'discount',
+    POPULAR: 'popular',
+    NEW: 'new',
+    RELATED: 'related'
+  }
+};
 
 // ===== ФУНКЦИЯ ДЛЯ ВХОДА ЧЕРЕЗ GOOGLE =====
 function signInWithGoogle() {
@@ -1208,7 +1218,7 @@ let currentFilters = {
   search: '',
   availability: '',
   source: '',
-  gender: 'all' // Додано
+  gender: 'all'
 };
 
 // Глобальная переменная для рейтинга
@@ -1405,11 +1415,633 @@ function preprocessProducts(productsArray) {
   return processedProducts;
 }
 
+// ===== СИСТЕМА РЕКЛАМНЫХ БЛОКОВ =====
+
+// ===== РЕКЛАМНЫЕ ФУНКЦИИ =====
+function getAdProducts(type = AD_CONFIG.AD_TYPES.POPULAR, count = 4, excludeId = null) {
+  let adProducts = [...products];
+  
+  if (excludeId) {
+    adProducts = adProducts.filter(p => p.id !== excludeId);
+  }
+  
+  switch(type) {
+    case AD_CONFIG.AD_TYPES.DISCOUNT:
+      adProducts = adProducts.filter(p => p.discount && p.discount > 0);
+      break;
+    case AD_CONFIG.AD_TYPES.POPULAR:
+      adProducts = adProducts.filter(p => p.isPopular);
+      break;
+    case AD_CONFIG.AD_TYPES.NEW:
+      adProducts = adProducts.filter(p => p.isNew);
+      break;
+    case AD_CONFIG.AD_TYPES.RELATED:
+      if (excludeId) {
+        const currentProduct = products.find(p => p.id === excludeId);
+        if (currentProduct && currentProduct.category) {
+          adProducts = adProducts.filter(p => 
+            p.category === currentProduct.category && p.id !== excludeId
+          );
+        }
+      }
+      break;
+  }
+  
+  if (adProducts.length < count) {
+    const randomProducts = [...products]
+      .filter(p => !adProducts.some(ap => ap.id === p.id))
+      .filter(p => !excludeId || p.id !== excludeId)
+      .slice(0, count - adProducts.length);
+    adProducts = [...adProducts, ...randomProducts];
+  }
+  
+  return shuffleArray(adProducts).slice(0, count);
+}
+
+function renderAdBlock(type, title, containerId, excludeId = null) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  const adProducts = getAdProducts(type, 4, excludeId);
+  
+  if (adProducts.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  container.innerHTML = `
+    <div class="ad-block">
+      <div class="ad-header">
+        <h3>${title}</h3>
+        <div class="ad-badge">
+          <i class="fas fa-ad"></i> Реклама
+        </div>
+      </div>
+      <div class="ad-products">
+        ${adProducts.map(product => `
+          <div class="ad-product-card" onclick="showProductDetail('${product.id}')">
+            ${product.discount ? `<div class="ad-discount">-${product.discount}%</div>` : ''}
+            ${product.isNew ? '<div class="ad-new">Новинка</div>' : ''}
+            <img src="${product.image || 'https://via.placeholder.com/150x150?text=No+Image'}" 
+                 alt="${product.title}" 
+                 loading="lazy">
+            <div class="ad-product-info">
+              <h4>${product.title}</h4>
+              <div class="ad-price">
+                <span>${formatPrice(product.price)} ₴</span>
+                ${product.oldPrice ? `<span class="ad-old-price">${formatPrice(product.oldPrice)} ₴</span>` : ''}
+              </div>
+              <button class="btn btn-buy" onclick="event.stopPropagation(); addToCart('${product.id}')">
+                <i class="fas fa-shopping-cart"></i> Купити
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  container.style.display = 'block';
+}
+
+function renderCatalogAds() {
+  const grid = document.getElementById("product-grid");
+  if (!grid) return;
+  
+  const currentProducts = getFilteredProducts();
+  const adContainerId = "catalog-ad-container";
+  
+  const oldAd = document.getElementById(adContainerId);
+  if (oldAd) oldAd.remove();
+  
+  const adContainer = document.createElement('div');
+  adContainer.id = adContainerId;
+  adContainer.className = 'catalog-ad-container';
+  
+  let adType = AD_CONFIG.AD_TYPES.POPULAR;
+  let adTitle = 'Популярні товари';
+  
+  if (currentFilters.category) {
+    adType = AD_CONFIG.AD_TYPES.RELATED;
+    adTitle = `Схожі товари у категорії "${currentFilters.category}"`;
+  } else if (currentFilters.search) {
+    adType = AD_CONFIG.AD_TYPES.POPULAR;
+    adTitle = `Рекомендуємо подивитися`;
+  }
+  
+  adContainer.innerHTML = `
+    <div class="ad-block">
+      <div class="ad-header">
+        <h3>${adTitle}</h3>
+        <div class="ad-badge">
+          <i class="fas fa-ad"></i> Реклама
+        </div>
+      </div>
+      <div class="ad-products" id="catalog-ad-products"></div>
+    </div>
+  `;
+  
+  if (grid.children.length > 2) {
+    grid.insertBefore(adContainer, grid.children[2]);
+  } else {
+    grid.appendChild(adContainer);
+  }
+  
+  const adProductsContainer = document.getElementById("catalog-ad-products");
+  const adProducts = getAdProducts(adType, 4);
+  
+  adProductsContainer.innerHTML = adProducts.map(product => `
+    <div class="ad-product-card" onclick="showProductDetail('${product.id}')">
+      ${product.discount ? `<div class="ad-discount">-${product.discount}%</div>` : ''}
+      ${product.isNew ? '<div class="ad-new">Новинка</div>' : ''}
+      <img src="${product.image || 'https://via.placeholder.com/150x150?text=No+Image'}" 
+           alt="${product.title}" 
+           loading="lazy">
+      <div class="ad-product-info">
+        <h4>${product.title}</h4>
+        <div class="ad-price">
+          <span>${formatPrice(product.price)} ₴</span>
+          ${product.oldPrice ? `<span class="ad-old-price">${formatPrice(product.oldPrice)} ₴</span>` : ''}
+        </div>
+        <button class="btn btn-buy" onclick="event.stopPropagation(); addToCart('${product.id}')">
+          <i class="fas fa-shopping-cart"></i> Купити
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderHomePageAds() {
+  renderAdBlock(
+    AD_CONFIG.AD_TYPES.POPULAR,
+    'Популярні товари',
+    'home-ad-popular'
+  );
+  
+  renderAdBlock(
+    AD_CONFIG.AD_TYPES.DISCOUNT,
+    'Акційні пропозиції',
+    'home-ad-discount'
+  );
+  
+  renderAdBlock(
+    AD_CONFIG.AD_TYPES.NEW,
+    'Новинки',
+    'home-ad-new'
+  );
+}
+
+function renderProductAd(productId) {
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+  
+  renderAdBlock(
+    AD_CONFIG.AD_TYPES.RELATED,
+    `Схожі товари в категорії "${product.category}"`,
+    'product-ad-related',
+    productId
+  );
+}
+
+function renderCartAd() {
+  const cartProductIds = Object.keys(cart);
+  if (cartProductIds.length === 0) return;
+  
+  const firstProductId = cartProductIds[0];
+  const firstProduct = products.find(p => p.id === firstProductId);
+  
+  if (!firstProduct) return;
+  
+  renderAdBlock(
+    AD_CONFIG.AD_TYPES.RELATED,
+    `Доповніть ваше замовлення`,
+    'cart-ad-related',
+    firstProductId
+  );
+}
+
+function addAdsToRenderProducts() {
+  const originalRenderProducts = renderProducts;
+  
+  renderProducts = function() {
+    originalRenderProducts();
+    
+    if (!showingFavorites && !currentFilters.search && products.length > 10) {
+      setTimeout(renderCatalogAds, 100);
+    }
+  };
+}
+
+function initAds() {
+  addAdsToRenderProducts();
+  
+  const adStyles = document.createElement('style');
+  adStyles.textContent = `
+    .ad-block {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 30px 0;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .ad-block::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+      opacity: 0.3;
+      z-index: 0;
+    }
+    
+    .ad-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .ad-header h3 {
+      margin: 0;
+      color: white;
+      font-size: 1.5rem;
+    }
+    
+    .ad-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      backdrop-filter: blur(10px);
+    }
+    
+    .ad-products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .ad-product-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .ad-product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .ad-product-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+    
+    .ad-product-info {
+      padding: 15px;
+    }
+    
+    .ad-product-info h4 {
+      margin: 0 0 10px 0;
+      font-size: 0.95rem;
+      color: #333;
+      height: 40px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    
+    .ad-price {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .ad-price span {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #2c3e50;
+    }
+    
+    .ad-old-price {
+      font-size: 0.9rem;
+      color: #95a5a6;
+      text-decoration: line-through;
+    }
+    
+    .ad-discount {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #e74c3c;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      z-index: 2;
+    }
+    
+    .ad-new {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #2ecc71;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      z-index: 2;
+    }
+    
+    .ad-product-card .btn-buy {
+      width: 100%;
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+    
+    .catalog-ad-container {
+      grid-column: 1 / -1;
+      margin: 30px 0;
+    }
+    
+    @media (max-width: 768px) {
+      .ad-products {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+      }
+      
+      .ad-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      
+      .ad-header h3 {
+        font-size: 1.2rem;
+      }
+    }
+    
+    @keyframes adAppear {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .ad-block {
+      animation: adAppear 0.5s ease-out;
+    }
+    
+    .main-banner {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 15px;
+      padding: 30px;
+      margin: 20px 0;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .banner-content {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .banner-content h2 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .banner-products {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin: 25px 0;
+    }
+    
+    .banner-product {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      min-width: 0;
+      overflow: hidden;
+    }
+    
+    .banner-product:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .banner-product img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    
+    .banner-product-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
+    }
+    
+    .banner-product-title {
+      font-weight: 500;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .banner-product-price {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #ffd700;
+    }
+    
+    @media (max-width: 1024px) {
+      .banner-products {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .main-banner {
+        padding: 20px;
+        margin: 15px 0;
+      }
+      
+      .banner-content h2 {
+        font-size: 1.5rem;
+      }
+      
+      .banner-products {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      .banner-product {
+        padding: 12px;
+        gap: 12px;
+      }
+      
+      .banner-product img {
+        width: 50px;
+        height: 50px;
+      }
+      
+      .banner-product-title {
+        font-size: 0.9rem;
+      }
+      
+      .banner-product-price {
+        font-size: 1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .main-banner {
+        padding: 15px;
+        border-radius: 10px;
+      }
+      
+      .banner-content h2 {
+        font-size: 1.3rem;
+      }
+      
+      .banner-products {
+        gap: 10px;
+      }
+      
+      .banner-product {
+        padding: 10px;
+        gap: 10px;
+      }
+    }
+  `;
+  document.head.appendChild(adStyles);
+}
+
+function getSmartAdProducts() {
+  const userBehavior = {
+    viewedProducts: JSON.parse(localStorage.getItem('user_viewed_products') || '[]'),
+    addedToCart: JSON.parse(localStorage.getItem('user_cart_history') || '[]'),
+    purchasedProducts: JSON.parse(localStorage.getItem('user_purchased_products') || '[]')
+  };
+  
+  const allViewedIds = [...userBehavior.viewedProducts, ...userBehavior.addedToCart];
+  const categoryCounts = {};
+  
+  allViewedIds.forEach(productId => {
+    const product = products.find(p => p.id === productId);
+    if (product && product.category) {
+      categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
+    }
+  });
+  
+  const favoriteCategory = Object.keys(categoryCounts).reduce((a, b) => 
+    categoryCounts[a] > categoryCounts[b] ? a : b, ''
+  );
+  
+  if (favoriteCategory) {
+    return products
+      .filter(p => p.category === favoriteCategory)
+      .slice(0, 4);
+  }
+  
+  return getAdProducts(AD_CONFIG.AD_TYPES.POPULAR, 4);
+}
+
+function trackUserBehavior(action, productId) {
+  let storageKey = '';
+  
+  switch(action) {
+    case 'view':
+      storageKey = 'user_viewed_products';
+      break;
+    case 'add_to_cart':
+      storageKey = 'user_cart_history';
+      break;
+    case 'purchase':
+      storageKey = 'user_purchased_products';
+      break;
+  }
+  
+  if (storageKey) {
+    const history = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const newHistory = [productId, ...history.filter(id => id !== productId)].slice(0, 20);
+    localStorage.setItem(storageKey, JSON.stringify(newHistory));
+  }
+}
+
+function renderMainAdBanner() {
+  const bannerContainer = document.getElementById('main-ad-banner');
+  if (!bannerContainer) return;
+  
+  const adProducts = getAdProducts(AD_CONFIG.AD_TYPES.POPULAR, 3);
+  
+  bannerContainer.innerHTML = `
+    <div class="main-banner">
+      <div class="banner-content">
+        <h2>🔥 Гарячі пропозиції!</h2>
+        <p>Обирайте краще за найкращою ціною</p>
+        <div class="banner-products">
+          ${adProducts.map(product => `
+            <div class="banner-product" onclick="showProductDetail('${product.id}')">
+              <img src="${product.image || 'https://via.placeholder.com/60x60?text=No+Image'}" alt="${product.title}">
+              <div class="banner-product-info">
+                <span class="banner-product-title">${product.title.substring(0, 30)}...</span>
+                <span class="banner-product-price">${formatPrice(product.price)} ₴</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <button class="btn btn-buy" onclick="applyFilters()" style="background: white; color: #667eea; font-weight: bold;">
+          <i class="fas fa-bolt"></i> Перейти до покупок
+        </button>
+      </div>
+    </div>
+  `;
+}
+// ===== КОНЕЦ СИСТЕМЫ РЕКЛАМНЫХ БЛОКОВ =====
+
 // Ініціалізація додатка
 function initApp() {
   emailjs.init(EMAILJS_USER_ID);
   
   initEnhancedSearch();
+  initAds();
 
   // Показать скелетоны сразу при инициализации
   showEnhancedLoadingSkeleton();
@@ -2419,6 +3051,10 @@ function addToCart(productId) {
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
   
   updateCartCount();
+  
+  // Добавляем отслеживание добавления в корзину
+  trackUserBehavior('add_to_cart', productId);
+  
   showNotification("Товар додано до кошика");
 }
 
@@ -2535,7 +3171,7 @@ function resetFilters() {
     search: '',
     availability: '',
     source: '',
-    gender: 'all' // Додано
+    gender: 'all'
   };
   
   // Сбрасываем кнопки фильтра по полу
@@ -2600,6 +3236,7 @@ function showProductDetail(productId) {
         </div>
       </div>
     </div>
+    <div id="product-ad-related"></div>
     <div class="product-reviews">
       <h4>Відгуки про товар</h4>
       <div id="reviews-container-${product.id}"></div>
@@ -2635,6 +3272,14 @@ function showProductDetail(productId) {
   
   currentRating = 0;
   updateRatingStars();
+  
+  // Добавляем отслеживание просмотра товара
+  trackUserBehavior('view', productId);
+  
+  // Добавляем рекламный блок для этого товара
+  setTimeout(() => {
+    renderProductAd(productId);
+  }, 100);
   
   openModal();
   
@@ -2817,11 +3462,17 @@ function openCart() {
       <div class="cart-items">
         ${cartItemsHTML}
       </div>
+      <div id="cart-ad-related"></div>
       <div class="cart-footer">
         <div class="cart-total">Разом: ${formatPrice(total)} ₴</div>
         <button class="btn btn-buy" onclick="checkout()">Оформити замовлення</button>
       </div>
     `;
+    
+    // Добавляем рекламный блок в корзину
+    setTimeout(() => {
+      renderCartAd();
+    }, 100);
   }
   
   openModal();
@@ -3028,6 +3679,11 @@ function placeOrder(event) {
       cart = {};
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
       updateCartCount();
+      
+      // Добавляем отслеживание покупки
+      Object.keys(order.items).forEach(productId => {
+        trackUserBehavior('purchase', productId);
+      });
       
       sendOrderEmail(docRef.id, order);
       
