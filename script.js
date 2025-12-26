@@ -48,6 +48,90 @@ const AD_CONFIG = {
   }
 };
 
+// ===== УЛУЧШЕННАЯ СИСТЕМА ОПРЕДЕЛЕНИЯ ПОЛА ИГРУШЕК =====
+
+// Расширенный словарь ключевых слов для определения пола
+const GENDER_KEYWORDS = {
+    // Для девочек
+    GIRL: {
+        uk: [
+            'лялька', 'ляльки', 'ляльок', 'барбі', 'барбі', 'принцеса', 'принцеси',
+            'кукла', 'куклі', 'кукол', 'пони', 'фея', 'феї', 'русалка', 'русалочка',
+            'сердечко', 'квітка', 'квіти', 'квіточка', 'рожевий', 'рожеві', 'фіолетовий',
+            'сукня', 'спідниця', 'блузка', 'туфлі', 'балетки', 'макіяж', 'косметика',
+            'прикраса', 'сережки', 'браслет', 'намисто', 'віночок', 'діадема', 'тіара',
+            'рукавички', 'сумочка', 'ведмедик', 'зайчик', 'кошеня', 'щеня', 'м\'яка',
+            'для дівчаток', 'для дівчинки', 'дівчачий', 'дівчачі', 'дівчинка', 'дівчатка',
+            'ляльковий', 'лялькові', 'будинок', 'кухня', 'посуд', 'їдальня', 'салон',
+            'краса', 'перукарня', 'салон краси', 'модна', 'модні', 'аксесуар', 'прикраси'
+        ],
+        ru: [
+            'кукла', 'куклы', 'кукол', 'барби', 'барби', 'принцесса', 'принцессы',
+            'пупс', 'пупсы', 'пони', 'фея', 'феи', 'русалка', 'русалочка',
+            'сердечко', 'цветок', 'цветы', 'цветочек', 'розовый', 'розовые', 'фиолетовый',
+            'платье', 'юбка', 'блузка', 'туфли', 'балетки', 'макияж', 'косметика',
+            'украшение', 'серьги', 'браслет', 'ожерелье', 'венок', 'диадема', 'тиара',
+            'перчатки', 'сумочка', 'медведик', 'зайчик', 'котенок', 'щенок', 'мягкая',
+            'для девочек', 'для девочки', 'девичий', 'девчачий', 'девочка', 'девочки',
+            'кукольный', 'кукольные', 'дом', 'кухня', 'посуда', 'столовая', 'салон',
+            'красота', 'парикмахерская', 'салон красоты', 'модная', 'модные', 'аксессуар', 'украшения'
+        ]
+    },
+    
+    // Для мальчиков
+    BOY: {
+        uk: [
+            'конструктор', 'конструктори', 'лего', 'машинка', 'машинки', 'автомобіль',
+            'трактор', 'екскаватор', 'бульдозер', 'робот', 'роботи', 'трансформер',
+            'супергерой', 'бетмен', 'спайдермен', 'танк', 'літак', 'вертоліт',
+            'космос', 'космічний', 'спорт', 'футбол', 'баскетбол', 'м\'яч', 'ракетка',
+            'пістолет', 'меч', 'лицар', 'динозавр', 'динозаври', 'робототехніка',
+            'техніка', 'інструмент', 'пила', 'молоток', 'викрутка', 'гайковий',
+            'ключ', 'паяльник', 'дриль', 'для хлопчиків', 'для хлопчика', 'хлопчачий',
+            'хлопчачі', 'хлопчик', 'хлопчики', 'бойовий', 'бойові', 'армія', 'військовий',
+            'поліція', 'пожежна', 'радіокерований', 'гоночний', 'спортивний', 'технічний'
+        ],
+        ru: [
+            'конструктор', 'конструкторы', 'лего', 'машинка', 'машинки', 'автомобиль',
+            'трактор', 'экскаватор', 'бульдозер', 'робот', 'роботы', 'трансформер',
+            'супергерой', 'бетмен', 'спайдермен', 'танк', 'самолет', 'вертолет',
+            'космос', 'космический', 'спорт', 'футбол', 'баскетбол', 'мяч', 'ракетка',
+            'пистолет', 'меч', 'рыцарь', 'динозавр', 'динозавры', 'робототехника',
+            'техника', 'инструмент', 'пила', 'молоток', 'отвертка', 'гаечный',
+            'ключ', 'паяльник', 'дрель', 'для мальчиков', 'для мальчика', 'мальчишеский',
+            'мальчишеские', 'мальчик', 'мальчики', 'боевой', 'боевые', 'армия', 'военный',
+            'полиция', 'пожарная', 'радиоуправляемый', 'гоночный', 'спортивный', 'технический'
+        ]
+    }
+};
+
+// Расширенный словарь категорий по полу
+const GENDER_CATEGORIES = {
+    GIRL: [
+        'Ляльки', 'Куклы', 'Для девочек', 'Для дівчаток', 'Кукольные домики',
+        'Кукольні будинки', 'Коляски для кукол', 'Коляски для ляльок',
+        'Одежда для кукол', 'Одяг для ляльок', 'Аксессуары для кукол',
+        'Аксесуари для ляльок', 'Барби', 'Барбі', 'Пони', 'Феи', 'Принцессы',
+        'Принцеси', 'Красота', 'Краса', 'Мода', 'Салоны красоты', 'Салон краси',
+        'Кухни', 'Кухні', 'Посуд', 'Посуда'
+    ],
+    BOY: [
+        'Конструкторы', 'Конструктори', 'Машинки', 'Радиоуправляемые',
+        'Радіокеровані', 'Роботы', 'Роботи', 'Трансформеры', 'Трансформери',
+        'Оружие', 'Зброя', 'Спорт', 'Техника', 'Техніка', 'Инструменты',
+        'Інструменти', 'Военная техника', 'Військова техніка', 'Полиция',
+        'Поліція', 'Пожарные', 'Пожежні', 'Космос', 'Космічний', 'Динозавры',
+        'Динозаври', 'Супергерои', 'Супергерої'
+    ],
+    UNISEX: [
+        'Настольные игры', 'Настільні ігри', 'Пазлы', 'Пазли', 'Головоломки',
+        'Развивающие игрушки', 'Розвиваючі іграшки', 'Творчество', 'Творчість',
+        'Музыкальные игрушки', 'Музичні іграшки', 'Книги', 'Книги для дітей',
+        'Книги для детей', 'Мягкие игрушки', 'М\'які іграшки', 'Детский транспорт',
+        'Дитячий транспорт', 'Для малышей', 'Для малюків'
+    ]
+};
+
 // ===== ФУНКЦИЯ ДЛЯ ВХОДА ЧЕРЕЗ GOOGLE =====
 function signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -2036,12 +2120,457 @@ function renderMainAdBanner() {
 }
 // ===== КОНЕЦ СИСТЕМЫ РЕКЛАМНЫХ БЛОКОВ =====
 
+// ===== УЛУЧШЕННАЯ ФУНКЦИЯ ОПРЕДЕЛЕНИЯ ПОЛА ТОВАРА =====
+function determineProductGender(product) {
+  if (!product) return 'unisex';
+  
+  // Если у товара есть явное поле gender, используем его
+  if (product.gender) {
+    return product.gender.toLowerCase();
+  }
+  
+  // Собираем весь текст для анализа
+  const textToAnalyze = [
+    product.title || '',
+    product.category || '',
+    product.description || '',
+    product.brand || '',
+    product.specifications || ''
+  ].join(' ').toLowerCase();
+  
+  // Нормализуем текст (убираем специальные символы, приводим к единому формату)
+  const normalizedText = textToAnalyze
+    .replace(/[єё]/g, 'е')
+    .replace(/[ї]/g, 'и')
+    .replace(/[і]/g, 'и')
+    .replace(/[ґ]/g, 'г')
+    .replace(/[ъь]/g, '')
+    .replace(/[^а-яa-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  // Подсчитываем баллы для каждого пола
+  let girlScore = 0;
+  let boyScore = 0;
+  
+  // Проверяем по категории (самый важный показатель)
+  if (product.category) {
+    const category = product.category.toLowerCase();
+    
+    // Проверяем категории для девочек
+    GENDER_CATEGORIES.GIRL.forEach(cat => {
+      if (category.includes(cat.toLowerCase())) {
+        girlScore += 10; // Высокий балл за категорию
+      }
+    });
+    
+    // Проверяем категории для мальчиков
+    GENDER_CATEGORIES.BOY.forEach(cat => {
+      if (category.includes(cat.toLowerCase())) {
+        boyScore += 10;
+      }
+    });
+    
+    // Проверяем унисекс категории
+    GENDER_CATEGORIES.UNISEX.forEach(cat => {
+      if (category.includes(cat.toLowerCase())) {
+        girlScore += 2;
+        boyScore += 2;
+      }
+    });
+  }
+  
+  // Проверяем ключевые слова в тексте
+  // Для девочек (украинские и русские)
+  GENDER_KEYWORDS.GIRL.uk.forEach(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    if (regex.test(normalizedText)) {
+      girlScore += 5;
+    }
+  });
+  
+  GENDER_KEYWORDS.GIRL.ru.forEach(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    if (regex.test(normalizedText)) {
+      girlScore += 5;
+    }
+  });
+  
+  // Для мальчиков (украинские и русские)
+  GENDER_KEYWORDS.BOY.uk.forEach(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    if (regex.test(normalizedText)) {
+      boyScore += 5;
+    }
+  });
+  
+  GENDER_KEYWORDS.BOY.ru.forEach(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    if (regex.test(normalizedText)) {
+      boyScore += 5;
+    }
+  });
+  
+  // Дополнительные правила
+  
+  // Проверяем по цвету в описании
+  const girlColors = ['рожевий', 'рожеві', 'фіолетовий', 'бірюзовий', 'розовый', 'фиолетовый', 'бирюзовый'];
+  const boyColors = ['синій', 'сині', 'зелений', 'зелені', 'чорний', 'чорні', 'синий', 'зеленый', 'черный'];
+  
+  girlColors.forEach(color => {
+    if (normalizedText.includes(color)) {
+      girlScore += 3;
+    }
+  });
+  
+  boyColors.forEach(color => {
+    if (normalizedText.includes(color)) {
+      boyScore += 3;
+    }
+  });
+  
+  // Проверяем по бренду (если бренд явно указывает на пол)
+  const girlBrands = ['barbie', 'disney princess', 'lol surprise', 'bratz', 'monster high'];
+  const boyBrands = ['lego', 'hot wheels', 'nerf', 'transformers', 'marvel', 'dc comics'];
+  
+  if (product.brand) {
+    const brand = product.brand.toLowerCase();
+    girlBrands.forEach(girlBrand => {
+      if (brand.includes(girlBrand)) {
+        girlScore += 8;
+      }
+    });
+    
+    boyBrands.forEach(boyBrand => {
+      if (brand.includes(boyBrand)) {
+        boyScore += 8;
+      }
+    });
+  }
+  
+  // Определяем результат с пороговым значением
+  const threshold = 5; // Минимальная разница для определения пола
+  
+  if (girlScore > boyScore && (girlScore - boyScore) >= threshold) {
+    return 'girl';
+  } else if (boyScore > girlScore && (boyScore - girlScore) >= threshold) {
+    return 'boy';
+  } else {
+    return 'unisex';
+  }
+}
+
+// ===== УЛУЧШЕННАЯ ФУНКЦИЯ ФИЛЬТРАЦИИ ПО ПОЛУ =====
+function filterByGender(gender) {
+  currentFilters.gender = gender;
+  localStorage.setItem(GENDER_FILTER_KEY, gender);
+  
+  // Обновляем активные кнопки
+  updateGenderButtons(gender);
+  
+  // Показываем уведомление о примененном фильтре
+  const genderTexts = {
+    'all': 'Всі іграшки',
+    'girl': 'Для дівчаток',
+    'boy': 'Для хлопчиків'
+  };
+  
+  showNotification(`Фільтр: ${genderTexts[gender]}`);
+  
+  // Сбрасываем страницу и применяем фильтры
+  currentPage = 1;
+  applyFilters();
+}
+
+// ===== ФУНКЦИЯ ОБНОВЛЕНИЯ КНОПОК ФИЛЬТРА ПО ПОЛУ =====
+function updateGenderButtons(activeGender) {
+  const genderButtons = document.querySelectorAll('.gender-btn');
+  
+  genderButtons.forEach(btn => {
+    const match = btn.getAttribute('onclick').match(/filterByGender\('(\w+)'\)/);
+    if (!match) return;
+    
+    const gender = match[1];
+    
+    btn.classList.remove('active', 'girl-active', 'boy-active', 'all-active');
+    
+    if (gender === activeGender) {
+      btn.classList.add('active');
+      
+      // Добавляем специальные классы для стилизации
+      if (gender === 'girl') {
+        btn.classList.add('girl-active');
+      } else if (gender === 'boy') {
+        btn.classList.add('boy-active');
+      } else if (gender === 'all') {
+        btn.classList.add('all-active');
+      }
+    }
+  });
+  
+  // Обновляем счетчики товаров по категориям
+  updateGenderCounters();
+}
+
+// ===== ФУНКЦИЯ ДЛЯ ПОДСЧЕТА ТОВАРОВ ПО КАТЕГОРИЯМ ПОЛА =====
+function updateGenderCounters() {
+  const allCount = products.length;
+  let girlCount = 0;
+  let boyCount = 0;
+  
+  products.forEach(product => {
+    const gender = determineProductGender(product);
+    if (gender === 'girl') girlCount++;
+    if (gender === 'boy') boyCount++;
+  });
+  
+  // Обновляем текст на кнопках с количеством товаров
+  const allBtn = document.querySelector('.gender-btn[onclick*="all"]');
+  const girlBtn = document.querySelector('.gender-btn[onclick*="girl"]');
+  const boyBtn = document.querySelector('.gender-btn[onclick*="boy"]');
+  
+  if (allBtn) {
+    allBtn.innerHTML = allBtn.innerHTML.replace(/\(\d+\)/, '') + ` (${allCount})`;
+  }
+  
+  if (girlBtn) {
+    girlBtn.innerHTML = girlBtn.innerHTML.replace(/\(\d+\)/, '') + ` (${girlCount})`;
+  }
+  
+  if (boyBtn) {
+    boyBtn.innerHTML = boyBtn.innerHTML.replace(/\(\d+\)/, '') + ` (${boyCount})`;
+  }
+}
+
+// ===== ФУНКЦИЯ ФИЛЬТРАЦИИ ТОВАРОВ ПО ПОЛУ =====
+function filterProductsByGender(filteredProducts, genderFilter) {
+  if (!genderFilter || genderFilter === 'all') {
+    return filteredProducts;
+  }
+  
+  return filteredProducts.filter(product => {
+    const productGender = determineProductGender(product);
+    
+    if (genderFilter === 'girl') {
+      return productGender === 'girl' || productGender === 'unisex';
+    } else if (genderFilter === 'boy') {
+      return productGender === 'boy' || productGender === 'unisex';
+    }
+    
+    return true;
+  });
+}
+
+// ===== ДОБАВЛЕНИЕ CSS ДЛЯ УЛУЧШЕННЫХ КНОПОК ФИЛЬТРА ПО ПОЛУ =====
+function addGenderFilterStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    .gender-filter-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .gender-btn {
+      padding: 10px 20px;
+      border: 2px solid #e0e0e0;
+      background: white;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .gender-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .gender-btn.active {
+      font-weight: bold;
+    }
+    
+    .gender-btn.girl-active {
+      background: linear-gradient(135deg, #ffb6c1 0%, #ff69b4 100%);
+      border-color: #ff69b4;
+      color: white;
+    }
+    
+    .gender-btn.boy-active {
+      background: linear-gradient(135deg, #87ceeb 0%, #1e90ff 100%);
+      border-color: #1e90ff;
+      color: white;
+    }
+    
+    .gender-btn.all-active {
+      background: linear-gradient(135deg, #98fb98 0%, #32cd32 100%);
+      border-color: #32cd32;
+      color: white;
+    }
+    
+    .gender-btn i {
+      font-size: 1.2em;
+    }
+    
+    .gender-counter {
+      background: rgba(255,255,255,0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+    
+    @media (max-width: 768px) {
+      .gender-filter-container {
+        justify-content: center;
+      }
+      
+      .gender-btn {
+        padding: 8px 16px;
+        font-size: 0.9em;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// ===== ФУНКЦИЯ ДЛЯ ДОБАВЛЕНИЯ КНОПОК ФИЛЬТРА ПО ПОЛУ В ИНТЕРФЕЙС =====
+function addGenderFilterButtons() {
+  const filterContainer = document.querySelector('.filters-section');
+  if (!filterContainer) return;
+  
+  // Проверяем, не добавлены ли уже кнопки
+  if (document.querySelector('.gender-filter-container')) return;
+  
+  const genderFilterHTML = `
+    <div class="gender-filter-container">
+      <button class="gender-btn all-active" onclick="filterByGender('all')">
+        <i class="fas fa-child"></i> Всі іграшки
+        <span class="gender-counter">${products.length}</span>
+      </button>
+      <button class="gender-btn" onclick="filterByGender('girl')">
+        <i class="fas fa-female"></i> Для дівчаток
+        <span class="gender-counter">0</span>
+      </button>
+      <button class="gender-btn" onclick="filterByGender('boy')">
+        <i class="fas fa-male"></i> Для хлопчиків
+        <span class="gender-counter">0</span>
+      </button>
+    </div>
+  `;
+  
+  filterContainer.insertAdjacentHTML('afterbegin', genderFilterHTML);
+  
+  // Добавляем стили
+  addGenderFilterStyles();
+  
+  // Обновляем счетчики
+  setTimeout(updateGenderCounters, 1000);
+}
+
+// ===== ИНИЦИАЛИЗАЦИЯ УЛУЧШЕННОЙ СИСТЕМЫ ФИЛЬТРАЦИИ ПО ПОЛУ =====
+function initEnhancedGenderFilter() {
+  // Добавляем кнопки фильтра по полу
+  addGenderFilterButtons();
+  
+  // Обновляем счетчики после загрузки товаров
+  setTimeout(updateGenderCounters, 2000);
+}
+
+// ===== МОДИФИЦИРОВАННАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ ОТФИЛЬТРОВАННЫХ ТОВАРОВ =====
+function getFilteredProductsEnhanced() {
+  let filteredProducts = [...products];
+  
+  if (showingFavorites) {
+    filteredProducts = filteredProducts.filter(product => favorites[product.id]);
+  }
+  
+  if (currentFilters.search) {
+    filteredProducts = searchProducts(currentFilters.search);
+  }
+  
+  if (currentFilters.category) {
+    filteredProducts = filteredProducts.filter(product => 
+      product.category === currentFilters.category
+    );
+  }
+  
+  if (currentFilters.brand) {
+    filteredProducts = filteredProducts.filter(product => 
+      product.brand === currentFilters.brand
+    );
+  }
+  
+  if (currentFilters.minPrice) {
+    filteredProducts = filteredProducts.filter(product => 
+      product.price >= currentFilters.minPrice
+    );
+  }
+  
+  if (currentFilters.maxPrice) {
+    filteredProducts = filteredProducts.filter(product => 
+      product.price <= currentFilters.maxPrice
+    );
+  }
+  
+  if (currentFilters.availability) {
+    filteredProducts = filteredProducts.filter(product => 
+      currentFilters.availability === 'in-stock' ? product.inStock : !product.inStock
+    );
+  }
+  
+  if (currentFilters.source) {
+    filteredProducts = filteredProducts.filter(product => 
+      product.source === currentFilters.source
+    );
+  }
+  
+  // Используем улучшенную фильтрацию по полу
+  if (currentFilters.gender && currentFilters.gender !== 'all') {
+    filteredProducts = filterProductsByGender(filteredProducts, currentFilters.gender);
+  }
+  
+  switch (currentFilters.sort) {
+    case 'price-asc':
+      filteredProducts.sort((a, b) => a.price - b.price);
+      break;
+    case 'price-desc':
+      filteredProducts.sort((a, b) => b.price - a.price);
+      break;
+    case 'name-asc':
+      filteredProducts.sort((a, b) => a.title.localeCompare(b.title));
+      break;
+    case 'name-desc':
+      filteredProducts.sort((a, b) => b.title.localeCompare(a.title));
+      break;
+    default:
+      filteredProducts.sort((a, b) => {
+        if (a.isPopular && !b.isPopular) return -1;
+        if (!a.isPopular && b.isPopular) return 1;
+        if (a.isNew && !b.isNew) return -1;
+        if (!a.isNew && b.isNew) return 1;
+        
+        return 0;
+      });
+      break;
+  }
+  
+  return filteredProducts;
+}
+
+// ===== КОНЕЦ УЛУЧШЕННОЙ СИСТЕМЫ ОПРЕДЕЛЕНИЯ ПОЛА ИГРУШЕК =====
+
 // Ініціалізація додатка
 function initApp() {
   emailjs.init(EMAILJS_USER_ID);
   
   initEnhancedSearch();
   initAds();
+  initEnhancedGenderFilter(); // Инициализация улучшенной системы фильтрации по полу
 
   // Показать скелетоны сразу при инициализации
   showEnhancedLoadingSkeleton();
@@ -2369,217 +2898,10 @@ function updatePagination() {
     paginationContainer.appendChild(nextButton);
 }
 
-// ===== ФУНКЦИЯ ОПРЕДЕЛЕНИЯ ПОЛА ТОВАРА =====
-function determineProductGender(product) {
-  if (!product) return 'unisex';
-  
-  // Если у товара есть явное поле gender
-  if (product.gender) {
-    return product.gender;
-  }
-  
-  const productTitle = product.title ? product.title.toLowerCase() : '';
-  const productCategory = product.category ? product.category.toLowerCase() : '';
-  const productDescription = product.description ? product.description.toLowerCase() : '';
-  const productBrand = product.brand ? product.brand.toLowerCase() : '';
-  
-  // Объединяем весь текст для анализа
-  const allText = `${productTitle} ${productCategory} ${productDescription} ${productBrand}`;
-  
-  // Нормализуем текст (убираем украинские буквы для лучшего сопоставления)
-  const normalizedText = allText
-    .replace(/[єё]/g, 'е')
-    .replace(/[ї]/g, 'и')
-    .replace(/[і]/g, 'и')
-    .replace(/[ґ]/g, 'г');
-  
-  // Ключевые слова для девочек (расширенный список)
-  const girlKeywords = [
-    'лялька', 'лялк', 'барби', 'барбі', 'принцесса', 'принцеса',
-    'кукла', 'кукл', 'пони', 'фея', 'фея', 'русалка', 'русалочка',
-    'сердце', 'серце', 'цветок', 'квітка', 'розовый', 'рожевий',
-    'розов', 'рожев', 'фиолетовый', 'фіолетовий', 'бирюзовый', 'бірюзовий',
-    'платье', 'сукня', 'юбка', 'спідниця', 'блузка', 'блузк',
-    'туфли', 'туфлі', 'балетки', 'балетк', 'макияж', 'макіяж',
-    'косметика', 'космет', 'украшение', 'прикраса', 'серьги', 'сережка',
-    'браслет', 'браслет', 'ожерелье', 'намисто', 'венок', 'віночок',
-    'диадема', 'тиара', 'перчатки', 'рукавички', 'сумочка', 'сумочк',
-    'медведик', 'ведмедик', 'зайчик', 'зайч', 'котенок', 'кошеня',
-    'щенок', 'цуденя', 'мягкая', 'м\'яка', 'игрушка', 'іграшка',
-    'для девоч', 'для дівч', 'девочк', 'дівч', 'girl', 'для girls'
-  ];
-  
-  // Ключевые слова для мальчиков (расширенный список)
-  const boyKeywords = [
-    'конструктор', 'конструкт', 'лего', 'lego', 'машинка', 'машинк',
-    'автомобиль', 'автомобіль', 'трактор', 'трактор', 'экскаватор', 'екскаватор',
-    'бульдозер', 'бульдозер', 'робот', 'робот', 'трансформер', 'трансформер',
-    'супергерой', 'супергеро', 'бетмен', 'batman', 'спайдермен', 'spiderman',
-    'танк', 'танк', 'самолет', 'літак', 'вертолет', 'вертоліт',
-    'космос', 'космос', 'спорт', 'спорт', 'футбол', 'футбол',
-    'баскетбол', 'баскетбол', 'мяч', 'м\'яч', 'ракетка', 'ракетк',
-    'пистолет', 'пістолет', 'меч', 'меч', 'рыцарь', 'лицар',
-    'динозавр', 'динозавр', 'динозаври', 'динозавр', 'робототехника', 'робототехніка',
-    'техника', 'техніка', 'инструмент', 'інструмент', 'пила', 'пил',
-    'молоток', 'молоток', 'отвертка', 'викрутка', 'гаечный', 'гайковий',
-    'ключ', 'ключ', 'паяльник', 'паяльник', 'дрель', 'дриль',
-    'для мальчик', 'для хлопч', 'мальчик', 'хлопч', 'boy', 'для boys'
-  ];
-  
-  // Считаем совпадения
-  let girlScore = 0;
-  let boyScore = 0;
-  
-  girlKeywords.forEach(keyword => {
-    if (normalizedText.includes(keyword)) {
-      girlScore++;
-    }
-  });
-  
-  boyKeywords.forEach(keyword => {
-    if (normalizedText.includes(keyword)) {
-      boyScore++;
-    }
-  });
-  
-  // Определяем пол на основе счетчиков с пороговым значением
-  if (girlScore > boyScore && girlScore > 0) {
-    return 'girl';
-  } else if (boyScore > girlScore && boyScore > 0) {
-    return 'boy';
-  } else if (girlScore === boyScore && girlScore > 0) {
-    return 'unisex';
-  }
-  
-  // Если не найдено ключевых слов, проверяем категории
-  const girlCategories = ['куклы', 'ляльки', 'для девочек', 'для дівчаток'];
-  const boyCategories = ['конструкторы', 'конструктори', 'машинки', 'для мальчиков', 'для хлопчиків'];
-  
-  if (girlCategories.some(cat => productCategory.includes(cat))) {
-    return 'girl';
-  } else if (boyCategories.some(cat => productCategory.includes(cat))) {
-    return 'boy';
-  }
-  
-  return 'unisex';
-}
-
-// ===== ФУНКЦИЯ ФИЛЬТРАЦИИ ПО ПОЛУ =====
-function filterByGender(gender) {
-  currentFilters.gender = gender;
-  localStorage.setItem(GENDER_FILTER_KEY, gender);
-  
-  // Обновляем активные кнопки
-  updateGenderButtons(gender);
-  
-  // Сбрасываем страницу и применяем фильтры
-  currentPage = 1;
-  applyFilters();
-}
-
-function updateGenderButtons(activeGender) {
-  const genderButtons = document.querySelectorAll('.gender-btn');
-  genderButtons.forEach(btn => {
-    const gender = btn.getAttribute('onclick').match(/filterByGender\('(\w+)'\)/)[1];
-    if (gender === activeGender) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
-  });
-}
-
+// Функция получения отфильтрованных товаров
 function getFilteredProducts() {
-  let filteredProducts = [...products];
-  
-  if (showingFavorites) {
-    filteredProducts = filteredProducts.filter(product => favorites[product.id]);
-  }
-  
-  if (currentFilters.search) {
-    filteredProducts = searchProducts(currentFilters.search);
-  }
-  
-  if (currentFilters.category) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.category === currentFilters.category
-    );
-  }
-  
-  if (currentFilters.brand) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.brand === currentFilters.brand
-    );
-  }
-  
-  if (currentFilters.minPrice) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.price >= currentFilters.minPrice
-    );
-  }
-  
-  if (currentFilters.maxPrice) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.price <= currentFilters.maxPrice
-    );
-  }
-  
-  if (currentFilters.availability) {
-    filteredProducts = filteredProducts.filter(product => 
-      currentFilters.availability === 'in-stock' ? product.inStock : !product.inStock
-    );
-  }
-  
-  if (currentFilters.source) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.source === currentFilters.source
-    );
-  }
-  
-  // Фільтр по полу (додано) - УЛУЧШЕННАЯ ВЕРСИЯ
-  if (currentFilters.gender && currentFilters.gender !== 'all') {
-    filteredProducts = filteredProducts.filter(product => {
-      const productGender = determineProductGender(product);
-      
-      if (currentFilters.gender === 'girl') {
-        return productGender === 'girl' || productGender === 'unisex';
-      } else if (currentFilters.gender === 'boy') {
-        return productGender === 'boy' || productGender === 'unisex';
-      }
-      
-      return true;
-    });
-  }
-  
-  switch (currentFilters.sort) {
-    case 'price-asc':
-      filteredProducts.sort((a, b) => a.price - b.price);
-      break;
-    case 'price-desc':
-      filteredProducts.sort((a, b) => b.price - a.price);
-      break;
-    case 'name-asc':
-      filteredProducts.sort((a, b) => a.title.localeCompare(b.title));
-      break;
-    case 'name-desc':
-      filteredProducts.sort((a, b) => b.title.localeCompare(a.title));
-      break;
-    default:
-      filteredProducts.sort((a, b) => {
-        if (a.isPopular && !b.isPopular) return -1;
-        if (!a.isPopular && b.isPopular) return 1;
-        if (a.isNew && !b.isNew) return -1;
-        if (!a.isNew && b.isNew) return 1;
-        
-        return 0;
-      });
-      break;
-  }
-  
-  return filteredProducts;
+  return getFilteredProductsEnhanced();
 }
-
-// ===== КІНЕЦЬ ФУНКЦІЙ ФІЛЬТРАЦІЇ ПО ПОЛУ =====
 
 // Функція для завантаження XML-фіду
 async function loadFromFeed() {
