@@ -3835,17 +3835,17 @@ function checkout() {
     `;
   });
   
-  // Добавляем общую информацию о нескольких поставщиках
-  if (suppliersCount > 1) {
-    summaryHTML += `
-      <div class="multi-supplier-notice">
-        <i class="fas fa-info-circle"></i>
-        <p><strong>Важно!</strong> Ваш заказ содержит товары от ${suppliersCount} разных поставщиков. 
-        Каждый поставщик отправит свою часть заказа отдельной посылкой. 
-        Вы получите несколько трек-номеров для отслеживания.</p>
-      </div>
-    `;
-  }
+// Додаємо загальну інформацію про кількох постачальників
+if (suppliersCount > 1) {
+  summaryHTML += `
+    <div class="multi-supplier-notice">
+      <i class="fas fa-info-circle"></i>
+      <p><strong>Важливо!</strong> Ваше замовлення містить товари від ${suppliersCount} різних постачальників. 
+      Кожен постачальник надішле свою частину замовлення окремою посилкою. 
+      Ви отримаєте кілька трек-номерів для відстеження.</p>
+    </div>
+  `;
+}
   
   modalContent.innerHTML = `
     <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
