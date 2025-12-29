@@ -4093,7 +4093,7 @@ const parcelsSection = `
             <div class="parcel-status">Готується до відправлення</div>
             <div class="parcel-supplier">${supplierName}</div>
             <div class="parcel-actions">
-              <button class="btn btn-small" onclick="trackParcel(${i})">
+              <button class="btn btn-small" onclick="trackParcelByTTN('${order.ttn1 || ''}')">
                 <i class="fas fa-truck"></i> Відстежити
               </button>
             </div>
@@ -4150,6 +4150,153 @@ const parcelsSection = `
   `;
   
   openModal();
+}
+
+// ===== ФУНКЦИЯ ДОДАВАННЯ ДВОХ ТТН ДО ЗАМОВЛЕННЯ =====
+function addTTNToOrder(orderId) {
+  // Получаем заказ для отображения текущих данных
+  db.collection("orders").doc(orderId).get().then((doc) => {
+    if (!doc.exists) {
+      showNotification("Замовлення не знайдено", "error");
+      return;
+    }
+    
+    const order = doc.data();
+    const modalContent = document.getElementById("modal-content");
+    
+    modalContent.innerHTML = `
+      <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
+      <h3>Додати ТТН для замовлення #${orderId}</h3>
+      <form onsubmit="saveTwoTTN(event, '${orderId}')">
+        <div class="form-group">
+          <label>ТТН для посилки 1 (Обов'язково)</label>
+          <input type="text" id="ttn1" value="${order.ttn1 || order.ttn || ''}" required 
+                 placeholder="59000000000000">
+        </div>
+        <div class="form-group">
+          <label>ТТН для посилки 2 (Якщо потрібно)</label>
+          <input type="text" id="ttn2" value="${order.ttn2 || ''}" 
+                 placeholder="59000000000001">
+          <small class="form-hint">Заповніть, якщо замовлення відправляється двома окремими посилками</small>
+        </div>
+        <div class="form-group">
+          <label>Коментар до ТТН (необов'язково)</label>
+          <textarea id="ttn-comment" rows="2" placeholder="Наприклад: Посилка 1 - іграшки, Посилка 2 - книги">${order.ttnComment || ''}</textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-detail">Зберегти ТТН</button>
+          <button type="button" class="btn" onclick="closeModal()">Скасувати</button>
+        </div>
+      </form>
+    `;
+    
+    openModal();
+  }).catch((error) => {
+    console.error("Помилка завантаження замовлення: ", error);
+    showNotification("Помилка завантаження даних замовлення", "error");
+  });
+}
+
+// ===== ФУНКЦИЯ ЗБЕРЕЖЕННЯ ДВОХ ТТН =====
+function saveTwoTTN(event, orderId) {
+  event.preventDefault();
+  
+  const ttn1 = document.getElementById('ttn1').value.trim();
+  const ttn2 = document.getElementById('ttn2').value.trim();
+  const ttnComment = document.getElementById('ttn-comment').value.trim();
+  
+  if (!ttn1) {
+    showNotification("Будь ласка, введіть хоча б один ТТН", "error");
+    return;
+  }
+  
+  const updateData = {
+    ttn1: ttn1,
+    ttnAddedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  
+  // Додаємо другий ТТН, якщо він є
+  if (ttn2) {
+    updateData.ttn2 = ttn2;
+  }
+  
+  // Додаємо коментар, якщо він є
+  if (ttnComment) {
+    updateData.ttnComment = ttnComment;
+  }
+  
+  // Видаляємо старе поле ttn, якщо воно існувало
+  updateData.ttn = firebase.firestore.FieldValue.delete();
+  
+  db.collection("orders").doc(orderId).update(updateData)
+    .then(() => {
+      showNotification("ТТН успішно збережено");
+      closeModal();
+      
+      // Відправляємо email з повідомленням про ТТН
+      db.collection("orders").doc(orderId).get()
+        .then((doc) => {
+          if (doc.exists) {
+            const order = { id: doc.id, ...doc.data() };
+            sendTTNEmail(orderId, order);
+          }
+        });
+      
+      // Оновлюємо список замовлень
+      loadAdminOrders();
+    })
+    .catch((error) => {
+      console.error("Помилка збереження ТТН: ", error);
+      showNotification("Помилка збереження ТТН", "error");
+    });
+}
+
+// ===== ФУНКЦІЯ ВІДПРАВКИ EMAIL ПРО ТТН =====
+function sendTTNEmail(orderId, order) {
+  if (!order.ttn1 && !order.ttn2) return;
+  
+  // Готуємо список ТТН для email
+  let ttnList = '';
+  if (order.ttn1 && order.ttn2) {
+    ttnList = `
+      <p><strong>ТТН для посилки 1:</strong> ${order.ttn1}</p>
+      <p><strong>ТТН для посилки 2:</strong> ${order.ttn2}</p>
+    `;
+  } else if (order.ttn1) {
+    ttnList = `<p><strong>ТТН:</strong> ${order.ttn1}</p>`;
+  }
+  
+  const templateParams = {
+    to_email: order.userEmail,
+    order_id: orderId,
+    customer_name: order.userName,
+    ttn_list: ttnList,
+    ttn_comment: order.ttnComment || '',
+    delivery_service: order.delivery.service,
+    delivery_city: order.delivery.city,
+    delivery_warehouse: order.delivery.warehouse,
+    tracking_url: `https://tracking.novaposhta.ua/#/uk/search/${order.ttn1 || order.ttn2}`
+  };
+
+  // Используем другой шаблон для уведомления о ТТН
+  emailjs.send(EMAILJS_SERVICE_ID, "template_ttn_notification", templateParams)
+    .then(function(response) {
+      console.log('Email с ТТН успешно отправлен!', response.status, response.text);
+    }, function(error) {
+      console.error('Ошибка отправки email с ТТН:', error);
+    });
+}
+
+// ===== ФУНКЦІЯ ВІДСТЕЖЕННЯ ПО ТТН =====
+function trackParcelByTTN(ttn) {
+  if (!ttn) {
+    showNotification("ТТН не вказано", "error");
+    return;
+  }
+  
+  const trackingUrl = `https://tracking.novaposhta.ua/#/uk/search/${ttn}`;
+  window.open(trackingUrl, '_blank');
 }
 
 // Відкриття модального вікна
@@ -4653,7 +4800,7 @@ function loadAdminOrders() {
             <p><strong>Сума:</strong> ${formatPrice(order.total)} ₴</p>
             <p><strong>Доставка:</strong> ${order.delivery.service}</p>
             <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
-            ${order.ttn ? `<p><strong>ТТН:</strong> ${order.ttn}</p>` : ''}
+            ${order.ttn1 || order.ttn ? `<p><strong>ТТН:</strong> ${order.ttn1 ? '1: ' + order.ttn1 : ''} ${order.ttn1 && order.ttn2 ? ', 2: ' + order.ttn2 : ''}</p>` : ''}
           </div>
           <div class="admin-order-actions">
             <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Деталі</button>
@@ -4664,7 +4811,10 @@ function loadAdminOrders() {
               <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Доставлено</option>
               <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Скасовано</option>
             </select>
-            <button class="btn" onclick="addTTNToOrder('${order.id}')">ТТН</button>
+            <button class="btn" onclick="addTTNToOrder('${order.id}')">
+              <i class="fas fa-truck"></i> ${order.ttn1 || order.ttn ? 'ТТН' : 'Додати ТТН'}
+              ${order.ttn1 && order.ttn2 ? ' (2)' : order.ttn1 ? ' (1)' : ''}
+            </button>
             <button class="btn btn-danger" onclick="deleteOrder('${order.id}')">Видалити</button>
           </div>
         `;
@@ -4674,62 +4824,6 @@ function loadAdminOrders() {
     }, (error) => {
       console.error("Помилка завантаження замовлень: ", error);
       ordersList.innerHTML = '<p>Помилка завантаження замовлень</p>';
-    });
-}
-
-// ===== ФУНКЦІЯ ДОДАВАННЯ ТТН ДО ЗАМОВЛЕННЯ =====
-function addTTNToOrder(orderId) {
-  const ttn = prompt('Введіть ТТН (трек-номер) для цього замовлення:');
-  
-  if (ttn && ttn.trim() !== '') {
-    db.collection("orders").doc(orderId).update({
-      ttn: ttn.trim(),
-      ttnAddedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      showNotification("ТТН успішно додано до замовлення");
-      
-      // Отправляем email с уведомлением о ТТН
-      db.collection("orders").doc(orderId).get()
-        .then((doc) => {
-          if (doc.exists) {
-            const order = { id: doc.id, ...doc.data() };
-            sendTTNEmail(orderId, order);
-          }
-        });
-      
-      // Обновляем список заказов
-      loadAdminOrders();
-    })
-    .catch((error) => {
-      console.error("Помилка додавання ТТН: ", error);
-      showNotification("Помилка додавання ТТН", "error");
-    });
-  }
-}
-
-// ===== ФУНКЦІЯ ВІДПРАВКИ EMAIL ПРО ТТН =====
-function sendTTNEmail(orderId, order) {
-  if (!order.ttn) return;
-  
-  const templateParams = {
-    to_email: order.userEmail,
-    order_id: orderId,
-    customer_name: order.userName,
-    ttn_number: order.ttn,
-    delivery_service: order.delivery.service,
-    delivery_city: order.delivery.city,
-    delivery_warehouse: order.delivery.warehouse,
-    tracking_url: `https://tracking.novaposhta.ua/#/uk/search/${order.ttn}`
-  };
-
-  // Используем другой шаблон для уведомления о ТТН
-  emailjs.send(EMAILJS_SERVICE_ID, "template_ttn_notification", templateParams)
-    .then(function(response) {
-      console.log('Email с ТТН успешно отправлен!', response.status, response.text);
-    }, function(error) {
-      console.error('Ошибка отправки email с ТТН:', error);
     });
 }
 
@@ -4825,15 +4919,24 @@ function viewOrderDetails(orderId) {
         </div>
       ` : '';
       
-      const ttnSection = order.ttn ? `
+      const ttnSection = (order.ttn1 || order.ttn2) ? `
         <div class="ttn-section" style="margin: 1rem 0; padding: 1rem; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #007bff;">
           <h4>Інформація про відправлення</h4>
-          <p><strong>ТТН (трек-номер):</strong> ${order.ttn}</p>
+          ${order.ttn1 ? `
+            <p><strong>ТТН для посилки 1:</strong> ${order.ttn1}</p>
+            <p><a href="https://tracking.novaposhta.ua/#/uk/search/${order.ttn1}" target="_blank" style="color: #007bff; text-decoration: none;">
+              <i class="fas fa-external-link-alt"></i> Відстежити посилку 1
+            </a></p>
+          ` : ''}
+          ${order.ttn2 ? `
+            <p><strong>ТТН для посилки 2:</strong> ${order.ttn2}</p>
+            <p><a href="https://tracking.novaposhta.ua/#/uk/search/${order.ttn2}" target="_blank" style="color: #007bff; text-decoration: none;">
+              <i class="fas fa-external-link-alt"></i> Відстежити посилку 2
+            </a></p>
+          ` : ''}
+          ${order.ttnComment ? `<p><strong>Коментар:</strong> ${order.ttnComment}</p>` : ''}
           <p><strong>Дата додавання ТТН:</strong> ${ttnDate}</p>
           <p><strong>Служба доставки:</strong> Нова Пошта</p>
-          <p><a href="https://tracking.novaposhta.ua/#/uk/search/${order.ttn}" target="_blank" style="color: #007bff; text-decoration: none;">
-            <i class="fas fa-external-link-alt"></i> Відстежити посилку
-          </a></p>
         </div>
       ` : `
         <div class="ttn-section" style="margin: 1rem 0; padding: 1rem; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
@@ -4844,7 +4947,7 @@ function viewOrderDetails(orderId) {
       const ttnButton = adminMode ? `
         <div style="margin: 1rem 0;">
           <button class="btn btn-detail" onclick="addTTNToOrder('${order.id}')">
-            <i class="fas fa-truck"></i> ${order.ttn ? 'Змінити ТТН' : 'Додати ТТН'}
+            <i class="fas fa-truck"></i> ${order.ttn1 || order.ttn ? 'Змінити ТТН' : 'Додати ТТН'}
           </button>
         </div>
       ` : '';
@@ -5475,12 +5578,19 @@ function viewOrders() {
                 const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
                 const statusInfo = getOrderStatusInfo(order.status);
                 
-                const ttnSection = order.ttn ? `
+                const ttnSection = (order.ttn1 || order.ttn2) ? `
                     <div class="order-ttn-info">
-                        <p><strong>ТТН:</strong> ${order.ttn}</p>
-                        <a href="https://tracking.novaposhta.ua/#/uk/search/${order.ttn}" target="_blank" class="track-link">
-                            <i class="fas fa-external-link-alt"></i> Відстежити посилку
-                        </a>
+                        <p><strong>ТТН:</strong> ${order.ttn1 ? '1: ' + order.ttn1 : ''} ${order.ttn1 && order.ttn2 ? ', 2: ' + order.ttn2 : ''}</p>
+                        ${order.ttn1 ? `
+                            <a href="https://tracking.novaposhta.ua/#/uk/search/${order.ttn1}" target="_blank" class="track-link">
+                                <i class="fas fa-external-link-alt"></i> Відстежити посилку 1
+                            </a>
+                        ` : ''}
+                        ${order.ttn2 ? `
+                            <a href="https://tracking.novaposhta.ua/#/uk/search/${order.ttn2}" target="_blank" class="track-link">
+                                <i class="fas fa-external-link-alt"></i> Відстежити посилку 2
+                            </a>
+                        ` : ''}
                     </div>
                 ` : '';
                 
