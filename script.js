@@ -23,16 +23,16 @@ const PRODUCT_FILES = [
     'toys6.json'
 ];
 
-// Названия поставщиков для отображения
+// Назви постачальників для відображення
 const SUPPLIER_NAMES = {
-    'toys1.json': 'Поставщик "kiddisvit"',
-    'toys2.json': 'Поставщик "toytoytrade"', 
-    'toys3.json': 'Поставщик "Веселые Игрушки"',
-    'toys4.json': 'Поставщик "Развивайка"',
-    'toys5.json': 'Поставщик "ToyLand"',
-    'toys6.json': 'Поставщик "Happy Toys"',
-    'firebase': 'Основной склад',
-    'default': 'Без поставщика'
+    'toys1.json': 'Постачальник "kiddisvit"',
+    'toys2.json': 'Постачальник "toytoytrade"', 
+    'toys3.json': 'Постачальник "Веселі Іграшки"',
+    'toys4.json': 'Постачальник "Розвивайка"',
+    'toys5.json': 'Постачальник "ToyLand"',
+    'toys6.json': 'Постачальник "Happy Toys"',
+    'firebase': 'Основний склад',
+    'default': 'Без постачальника'
 };
 
 // Ініціалізація Firebase
@@ -3871,7 +3871,7 @@ function removeFromCart(productId) {
   openCart();
 }
 
-// ===== УЛУЧШЕННАЯ ФУНКЦИЯ ОФОРМЛЕНИЯ ЗАКАЗА =====
+// ===== ПОКРАЩЕНА ФУНКЦІЯ ОФОРМЛЕННЯ ЗАМОВЛЕННЯ =====
 function checkout() {
   if (!currentUser) {
     closeModal();
@@ -3882,19 +3882,19 @@ function checkout() {
 
   const modalContent = document.getElementById("modal-content");
   
-  // Группируем товары по поставщику для отображения
+  // Групуємо товари за постачальником для відображення
   const groupedBySource = groupCartItemsBySupplier();
   const suppliersCount = Object.keys(groupedBySource).length;
   
   let summaryHTML = '';
   
-  // Генерация сводки с разбивкой по поставщикам
+  // Генерація зведення з розбивкою за постачальниками
   Object.entries(groupedBySource).forEach(([source, sourceData], index) => {
     summaryHTML += `
       <div class="supplier-order-section">
         <div class="supplier-header">
           <h5>Посилка ${index + 1}: ${sourceData.sourceName}</h5>
-          <span class="supplier-label">Отдельная посылка</span>
+          <span class="supplier-label">Окрема посилка</span>
         </div>
         ${sourceData.items.map(item => `
           <div class="order-item">
@@ -3903,7 +3903,7 @@ function checkout() {
           </div>
         `).join('')}
         <div class="supplier-total-line">
-          <span>Итого от ${sourceData.sourceName}:</span>
+          <span>Разом від ${sourceData.sourceName}:</span>
           <span>${formatPrice(sourceData.total)} ₴</span>
         </div>
       </div>
