@@ -23,16 +23,16 @@ const PRODUCT_FILES = [
     'toys6.json'
 ];
 
-// Названия поставщиков для отображения
+// Назви постачальників для відображення
 const SUPPLIER_NAMES = {
-    'toys1.json': 'Поставщик "kiddisvit"',
-    'toys2.json': 'Поставщик "toytoytrade"', 
-    'toys3.json': 'Поставщик "Веселые Игрушки"',
-    'toys4.json': 'Поставщик "Развивайка"',
-    'toys5.json': 'Поставщик "ToyLand"',
-    'toys6.json': 'Поставщик "Happy Toys"',
-    'firebase': 'Основной склад',
-    'default': 'Без поставщика'
+    'toys1.json': 'Постачальник "kiddisvit"',
+    'toys2.json': 'Постачальник "toytoytrade"', 
+    'toys3.json': 'Постачальник "Веселі Іграшки"',
+    'toys4.json': 'Постачальник "Розвивайка"',
+    'toys5.json': 'Постачальник "ToyLand"',
+    'toys6.json': 'Постачальник "Happy Toys"',
+    'firebase': 'Основний склад',
+    'default': 'Без постачальника'
 };
 
 // Ініціалізація Firebase
@@ -3813,39 +3813,39 @@ function checkout() {
   
   let summaryHTML = '';
   
-  // Генерация сводки с разбивкой по поставщикам
-  Object.entries(groupedBySource).forEach(([source, sourceData], index) => {
-    summaryHTML += `
-      <div class="supplier-order-section">
-        <div class="supplier-header">
-          <h5>Посылка ${index + 1}: ${sourceData.sourceName}</h5>
-          <span class="supplier-label">Отдельная посылка</span>
-        </div>
-        ${sourceData.items.map(item => `
-          <div class="order-item">
-            <span>${item.product.title} x${item.quantity}</span>
-            <span>${formatPrice(item.itemTotal)} ₴</span>
-          </div>
-        `).join('')}
-        <div class="supplier-total-line">
-          <span>Итого от ${sourceData.sourceName}:</span>
-          <span>${formatPrice(sourceData.total)} ₴</span>
-        </div>
+// Генерація підсумку з розбивкою за постачальниками
+Object.entries(groupedBySource).forEach(([source, sourceData], index) => {
+  summaryHTML += `
+    <div class="supplier-order-section">
+      <div class="supplier-header">
+        <h5>Посилка ${index + 1}: ${sourceData.sourceName}</h5>
+        <span class="supplier-label">Окрема посилка</span>
       </div>
-    `;
-  });
+      ${sourceData.items.map(item => `
+        <div class="order-item">
+          <span>${item.product.title} x${item.quantity}</span>
+          <span>${formatPrice(item.itemTotal)} ₴</span>
+        </div>
+      `).join('')}
+      <div class="supplier-total-line">
+        <span>Разом від ${sourceData.sourceName}:</span>
+        <span>${formatPrice(sourceData.total)} ₴</span>
+      </div>
+    </div>
+  `;
+});
   
-  // Добавляем общую информацию о нескольких поставщиках
-  if (suppliersCount > 1) {
-    summaryHTML += `
-      <div class="multi-supplier-notice">
-        <i class="fas fa-info-circle"></i>
-        <p><strong>Важно!</strong> Ваш заказ содержит товары от ${suppliersCount} разных поставщиков. 
-        Каждый поставщик отправит свою часть заказа отдельной посылкой. 
-        Вы получите несколько трек-номеров для отслеживания.</p>
-      </div>
-    `;
-  }
+// Додаємо загальну інформацію про кількох постачальників
+if (suppliersCount > 1) {
+  summaryHTML += `
+    <div class="multi-supplier-notice">
+      <i class="fas fa-info-circle"></i>
+      <p><strong>Важливо!</strong> Ваше замовлення містить товари від ${suppliersCount} різних постачальників. 
+      Кожен постачальник надішле свою частину замовлення окремою посилкою. 
+      Ви отримаєте кілька трек-номерів для відстеження.</p>
+    </div>
+  `;
+}
   
   modalContent.innerHTML = `
     <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
@@ -4077,39 +4077,39 @@ function showOrderConfirmation(orderId, order) {
   // Определяем количество посылок
   const suppliersCount = order.suppliers ? Object.keys(order.suppliers).length : 1;
   
-  // Секция с информацией о посылках
-  const parcelsSection = `
-    <div class="parcels-info">
-      <h4><i class="fas fa-boxes"></i> Информация о посылках</h4>
-      <div class="parcel-cards">
-        ${Array.from({length: suppliersCount}).map((_, i) => {
-          const supplierKeys = order.suppliers ? Object.keys(order.suppliers) : ['default'];
-          const supplierKey = supplierKeys[i];
-          const supplierName = order.suppliers ? order.suppliers[supplierKey].name : 'Основной поставщик';
-          
-          return `
-            <div class="parcel-card">
-              <div class="parcel-number">Посылка ${i + 1}</div>
-              <div class="parcel-status">Готовится к отправке</div>
-              <div class="parcel-supplier">${supplierName}</div>
-              <div class="parcel-actions">
-                <button class="btn btn-small" onclick="trackParcel(${i})">
-                  <i class="fas fa-truck"></i> Отследить
-                </button>
-              </div>
+// Секція з інформацією про посилки
+const parcelsSection = `
+  <div class="parcels-info">
+    <h4><i class="fas fa-boxes"></i> Інформація про посилки</h4>
+    <div class="parcel-cards">
+      ${Array.from({length: suppliersCount}).map((_, i) => {
+        const supplierKeys = order.suppliers ? Object.keys(order.suppliers) : ['default'];
+        const supplierKey = supplierKeys[i];
+        const supplierName = order.suppliers ? order.suppliers[supplierKey].name : 'Основний постачальник';
+        
+        return `
+          <div class="parcel-card">
+            <div class="parcel-number">Посилка ${i + 1}</div>
+            <div class="parcel-status">Готується до відправлення</div>
+            <div class="parcel-supplier">${supplierName}</div>
+            <div class="parcel-actions">
+              <button class="btn btn-small" onclick="trackParcel(${i})">
+                <i class="fas fa-truck"></i> Відстежити
+              </button>
             </div>
-          `;
-        }).join('')}
-      </div>
-      ${suppliersCount > 1 ? `
-        <p class="parcel-notice">
-          <i class="fas fa-info-circle"></i>
-          Ваш заказ содержит ${suppliersCount} посылки от разных поставщиков. 
-          Трек-номера появятся здесь после отправки каждой посылки.
-        </p>
-      ` : ''}
+          </div>
+        `;
+      }).join('')}
     </div>
-  `;
+    ${suppliersCount > 1 ? `
+      <p class="parcel-notice">
+        <i class="fas fa-info-circle"></i>
+        Ваше замовлення містить ${suppliersCount} посилки від різних постачальників. 
+        Трек-номери з'являться тут після відправлення кожної посилки.
+      </p>
+    ` : ''}
+  </div>
+`;
   
   modalContent.innerHTML = `
     <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
