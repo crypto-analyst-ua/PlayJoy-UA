@@ -23,6 +23,18 @@ const PRODUCT_FILES = [
     'toys6.json'
 ];
 
+// Названия поставщиков для отображения
+const SUPPLIER_NAMES = {
+    'toys1.json': 'Поставщик "kiddisvit"',
+    'toys2.json': 'Поставщик "toytoytrade"', 
+    'toys3.json': 'Поставщик "Веселые Игрушки"',
+    'toys4.json': 'Поставщик "Развивайка"',
+    'toys5.json': 'Поставщик "ToyLand"',
+    'toys6.json': 'Поставщик "Happy Toys"',
+    'firebase': 'Основной склад',
+    'default': 'Без поставщика'
+};
+
 // Ініціалізація Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -93,6 +105,11 @@ function signInWithGoogle() {
             
             showNotification(errorMessage, "error");
         });
+}
+
+// ===== ФУНКЦИЯ ПОЛУЧЕНИЯ ИМЕНИ ПОСТАВЩИКА =====
+function getSupplierName(source) {
+    return SUPPLIER_NAMES[source] || `Поставщик (${source})`;
 }
 
 // ===== СЛОВНИК ПЕРЕКЛАДУ КАТЕГОРІЙ =====
@@ -2036,12 +2053,242 @@ function renderMainAdBanner() {
 }
 // ===== КОНЕЦ СИСТЕМЫ РЕКЛАМНЫХ БЛОКОВ =====
 
+// ===== СТИЛИ ДЛЯ ОТОБРАЖЕНИЯ РАЗНЫХ ПОСТАВЩИКОВ =====
+function addSupplierStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    /* Стили для много-поставщиковой системы */
+    .supplier-section {
+      border: 2px dashed #e0e0e0;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      background: #f9f9f9;
+    }
+    
+    .supplier-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .supplier-badge {
+      background: #ff9800;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .multi-supplier-warning {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .multi-supplier-warning i {
+      color: #f39c12;
+      font-size: 24px;
+    }
+    
+    .supplier-total {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-weight: bold;
+      border-top: 1px solid #dee2e6;
+    }
+    
+    .supplier-order-section {
+      background: white;
+      border: 2px solid #3498db;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+    
+    .supplier-label {
+      background: #3498db;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .supplier-total-line {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-weight: bold;
+      border-top: 1px solid #dee2e6;
+    }
+    
+    .multi-supplier-notice {
+      background: #e8f4fd;
+      border-left: 4px solid #3498db;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    /* Иконки для разных поставщиков */
+    .supplier-icon-1 { color: #e74c3c; }
+    .supplier-icon-2 { color: #3498db; }
+    .supplier-icon-3 { color: #2ecc71; }
+    .supplier-icon-4 { color: #f39c12; }
+    .supplier-icon-5 { color: #9b59b6; }
+    .supplier-icon-6 { color: #1abc9c; }
+    
+    .cart-info-banner {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      color: white;
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+    }
+    
+    .info-icon {
+      font-size: 24px;
+      margin-top: 5px;
+    }
+    
+    .info-content h4 {
+      margin: 0 0 10px 0;
+      color: white;
+    }
+    
+    .info-content ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    
+    .info-content li {
+      margin: 5px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .parcels-info {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .parcel-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 15px 0;
+    }
+    
+    .parcel-card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .parcel-number {
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 5px;
+    }
+    
+    .parcel-status {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 5px;
+    }
+    
+    .parcel-supplier {
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    
+    .parcel-notice {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 5px;
+      padding: 10px;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      .supplier-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      
+      .parcel-cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .cart-info-banner {
+        flex-direction: column;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// ===== ФУНКЦИЯ ДЛЯ ГРУППИРОВКИ ТОВАРОВ ПО ПОСТАВЩИКАМ =====
+function groupCartItemsBySupplier() {
+  const groupedBySource = {};
+  
+  for (const [productId, quantity] of Object.entries(cart)) {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      const source = product.source || 'default';
+      if (!groupedBySource[source]) {
+        groupedBySource[source] = {
+          sourceName: getSupplierName(source),
+          items: [],
+          total: 0
+        };
+      }
+      
+      const itemTotal = product.price * quantity;
+      groupedBySource[source].items.push({
+        product, 
+        quantity, 
+        itemTotal,
+        productId
+      });
+      groupedBySource[source].total += itemTotal;
+    }
+  }
+  
+  return groupedBySource;
+}
+
 // Ініціалізація додатка
 function initApp() {
   emailjs.init(EMAILJS_USER_ID);
   
   initEnhancedSearch();
   initAds();
+  addSupplierStyles(); // Добавляем стили для поставщиков
 
   // Показать скелетоны сразу при инициализации
   showEnhancedLoadingSkeleton();
@@ -3414,7 +3661,7 @@ function changeQuantity(delta) {
   input.value = value;
 }
 
-// Відкриття кошика
+// Відкриття кошика (ПЕРЕПИСАНА ВЕРСІЯ З ГРУПУВАННЯМ ЗА ПОСТАЧАЛЬНИКАМИ)
 function openCart() {
   const modalContent = document.getElementById("modal-content");
   
@@ -3429,30 +3676,73 @@ function openCart() {
       </div>
     `;
   } else {
-    let total = 0;
+    const groupedBySource = groupCartItemsBySupplier();
+    const suppliersCount = Object.keys(groupedBySource).length;
+    
     let cartItemsHTML = '';
     
+    // Інформаційний банер, якщо декілька постачальників
+    if (suppliersCount > 1) {
+      cartItemsHTML += `
+        <div class="cart-info-banner">
+          <div class="info-icon">
+            <i class="fas fa-boxes"></i>
+          </div>
+          <div class="info-content">
+            <h4>Декілька постачальників</h4>
+            <p>Ваше замовлення містить товари від <strong>${suppliersCount} різних постачальників</strong>.
+            Це означає, що:</p>
+            <ul>
+              <li><i class="fas fa-box"></i> Товари будуть відправлені <strong>окремими посилками</strong></li>
+              <li><i class="fas fa-clock"></i> Терміни доставки можуть відрізнятися</li>
+              <li><i class="fas fa-truck"></i> Ви отримаєте декілька трек-номерів</li>
+            </ul>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Відображаємо товари за постачальниками
+    Object.entries(groupedBySource).forEach(([source, sourceData]) => {
+      cartItemsHTML += `
+        <div class="supplier-section">
+          <div class="supplier-header">
+            <h4>${sourceData.sourceName}</h4>
+            <div class="supplier-badge">Відправляється окремою посилкою</div>
+          </div>
+          
+          ${sourceData.items.map(item => `
+            <div class="cart-item">
+              <img src="${item.product.image || 'https://via.placeholder.com/80x80?text=No+Image'}" 
+                   alt="${item.product.title}" class="cart-item-image">
+              <div class="cart-item-details">
+                <h4 class="cart-item-title">${item.product.title}</h4>
+                <div class="cart-item-price">
+                  ${formatPrice(item.product.price)} ₴ x ${item.quantity} = ${formatPrice(item.itemTotal)} ₴
+                </div>
+                <div class="cart-item-actions">
+                  <button class="btn" onclick="changeCartQuantity('${item.productId}', -1)">-</button>
+                  <span>${item.quantity}</span>
+                  <button class="btn" onclick="changeCartQuantity('${item.productId}', 1)">+</button>
+                  <button class="btn" onclick="removeFromCart('${item.productId}')"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+          
+          <div class="supplier-total">
+            Сума за товари від ${sourceData.sourceName}: <strong>${formatPrice(sourceData.total)} ₴</strong>
+          </div>
+        </div>
+      `;
+    });
+    
+    // Розрахунок загальної суми
+    let total = 0;
     for (const [productId, quantity] of Object.entries(cart)) {
       const product = products.find(p => p.id === productId);
       if (product) {
-        const itemTotal = product.price * quantity;
-        total += itemTotal;
-        
-        cartItemsHTML += `
-          <div class="cart-item">
-            <img src="${product.image || 'https://via.placeholder.com/80x80?text=No+Image'}" alt="${product.title}" class="cart-item-image">
-            <div class="cart-item-details">
-              <h4 class="cart-item-title">${product.title}</h4>
-              <div class="cart-item-price">${formatPrice(product.price)} ₴ x ${quantity} = ${formatPrice(itemTotal)} ₴</div>
-              <div class="cart-item-actions">
-                <button class="btn" onclick="changeCartQuantity('${productId}', -1)">-</button>
-                <span>${quantity}</span>
-                <button class="btn" onclick="changeCartQuantity('${productId}', 1)">+</button>
-                <button class="btn" onclick="removeFromCart('${productId}')"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-          </div>
-        `;
+        total += product.price * quantity;
       }
     }
     
@@ -3464,12 +3754,12 @@ function openCart() {
       </div>
       <div id="cart-ad-related"></div>
       <div class="cart-footer">
-        <div class="cart-total">Разом: ${formatPrice(total)} ₴</div>
+        <div class="cart-total">Загальна сума: ${formatPrice(total)} ₴</div>
         <button class="btn btn-buy" onclick="checkout()">Оформити замовлення</button>
       </div>
     `;
     
-    // Добавляем рекламный блок в корзину
+    // Додаємо рекламний блок у кошик
     setTimeout(() => {
       renderCartAd();
     }, 100);
@@ -3506,9 +3796,7 @@ function removeFromCart(productId) {
   openCart();
 }
 
-// ===== ДОБАВЛЕНИЕ КОММЕНТАРИЕВ К ЗАКАЗАМ И ВОЗМОЖНОСТИ ОТМЕНЫ =====
-
-// В функции checkout() добавляем поле для комментария
+// ===== УЛУЧШЕННАЯ ФУНКЦИЯ ОФОРМЛЕНИЯ ЗАКАЗА =====
 function checkout() {
   if (!currentUser) {
     closeModal();
@@ -3518,6 +3806,47 @@ function checkout() {
   }
 
   const modalContent = document.getElementById("modal-content");
+  
+  // Группируем товары по поставщику для отображения
+  const groupedBySource = groupCartItemsBySupplier();
+  const suppliersCount = Object.keys(groupedBySource).length;
+  
+  let summaryHTML = '';
+  
+  // Генерация сводки с разбивкой по поставщикам
+  Object.entries(groupedBySource).forEach(([source, sourceData], index) => {
+    summaryHTML += `
+      <div class="supplier-order-section">
+        <div class="supplier-header">
+          <h5>Посылка ${index + 1}: ${sourceData.sourceName}</h5>
+          <span class="supplier-label">Отдельная посылка</span>
+        </div>
+        ${sourceData.items.map(item => `
+          <div class="order-item">
+            <span>${item.product.title} x${item.quantity}</span>
+            <span>${formatPrice(item.itemTotal)} ₴</span>
+          </div>
+        `).join('')}
+        <div class="supplier-total-line">
+          <span>Итого от ${sourceData.sourceName}:</span>
+          <span>${formatPrice(sourceData.total)} ₴</span>
+        </div>
+      </div>
+    `;
+  });
+  
+  // Добавляем общую информацию о нескольких поставщиках
+  if (suppliersCount > 1) {
+    summaryHTML += `
+      <div class="multi-supplier-notice">
+        <i class="fas fa-info-circle"></i>
+        <p><strong>Важно!</strong> Ваш заказ содержит товары от ${suppliersCount} разных поставщиков. 
+        Каждый поставщик отправит свою часть заказа отдельной посылкой. 
+        Вы получите несколько трек-номеров для отслеживания.</p>
+      </div>
+    `;
+  }
+  
   modalContent.innerHTML = `
     <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
     <h3>Оформлення замовлення</h3>
@@ -3567,7 +3896,6 @@ function checkout() {
         </div>
       </div>
       
-      <!-- ДОБАВЛЕНО ПОЛЕ КОММЕНТАРИЯ -->
       <div class="form-group">
         <label>Коментар до замовлення (необов'язково)</label>
         <textarea id="order-comment" placeholder="Ваші побажання щодо замовлення..." rows="3"></textarea>
@@ -3576,7 +3904,7 @@ function checkout() {
       <div class="order-summary">
         <h4>Ваше замовлення</h4>
         <div class="order-items">
-          ${generateOrderSummary()}
+          ${summaryHTML}
         </div>
         <div class="order-total">
           <div class="total-line">
@@ -3603,7 +3931,7 @@ function checkout() {
   setTimeout(optimizeModalForMobile, 100);
 }
 
-// В функции placeOrder() добавляем сохранение комментария
+// В функции placeOrder() сохраняем информацию о поставщиках в заказе
 function placeOrder(event) {
   event.preventDefault();
   
@@ -3618,7 +3946,6 @@ function placeOrder(event) {
   const phone = document.getElementById('order-phone').value.trim();
   const email = document.getElementById('order-email').value.trim();
   const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-  // ДОБАВЛЕНО: Получаем комментарий
   const comment = document.getElementById('order-comment') ? document.getElementById('order-comment').value.trim() : '';
   
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -3658,16 +3985,28 @@ function placeOrder(event) {
     return;
   }
   
+  // Группируем товары по поставщику для сохранения в заказе
+  const groupedBySource = groupCartItemsBySupplier();
+  const suppliers = {};
+  
+  Object.entries(groupedBySource).forEach(([source, sourceData]) => {
+    suppliers[source] = {
+      name: sourceData.sourceName,
+      total: sourceData.total,
+      itemsCount: sourceData.items.length
+    };
+  });
+  
   const order = {
     userId: currentUser.uid,
     userName: name,
     userPhone: cleanPhone,
     userEmail: email,
     items: {...cart},
+    suppliers, // Сохраняем информацию о поставщиках
     total: calculateCartTotal(),
     delivery: deliveryDetails,
     paymentMethod,
-    // ДОБАВЛЕНО: Сохраняем комментарий
     comment: comment,
     status: 'new',
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -3724,17 +4063,53 @@ function calculateCartTotal() {
   }, 0);
 }
 
-// ===== ПОКАЗ ПІДТВЕРДЖЕННЯ ЗАКАЗА =====
+// ===== УЛУЧШЕННАЯ ФУНКЦИЯ ПОДТВЕРЖДЕНИЯ ЗАКАЗА =====
 function showOrderConfirmation(orderId, order) {
   const modalContent = document.getElementById("modal-content");
   
-  // ДОБАВЛЕНО: Отображение комментария если он есть
   const commentSection = order.comment ? `
     <div class="comment-section" style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
       <h4>Ваш коментар:</h4>
       <p>"${order.comment}"</p>
     </div>
   ` : '';
+  
+  // Определяем количество посылок
+  const suppliersCount = order.suppliers ? Object.keys(order.suppliers).length : 1;
+  
+  // Секция с информацией о посылках
+  const parcelsSection = `
+    <div class="parcels-info">
+      <h4><i class="fas fa-boxes"></i> Информация о посылках</h4>
+      <div class="parcel-cards">
+        ${Array.from({length: suppliersCount}).map((_, i) => {
+          const supplierKeys = order.suppliers ? Object.keys(order.suppliers) : ['default'];
+          const supplierKey = supplierKeys[i];
+          const supplierName = order.suppliers ? order.suppliers[supplierKey].name : 'Основной поставщик';
+          
+          return `
+            <div class="parcel-card">
+              <div class="parcel-number">Посылка ${i + 1}</div>
+              <div class="parcel-status">Готовится к отправке</div>
+              <div class="parcel-supplier">${supplierName}</div>
+              <div class="parcel-actions">
+                <button class="btn btn-small" onclick="trackParcel(${i})">
+                  <i class="fas fa-truck"></i> Отследить
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      ${suppliersCount > 1 ? `
+        <p class="parcel-notice">
+          <i class="fas fa-info-circle"></i>
+          Ваш заказ содержит ${suppliersCount} посылки от разных поставщиков. 
+          Трек-номера появятся здесь после отправки каждой посылки.
+        </p>
+      ` : ''}
+    </div>
+  `;
   
   modalContent.innerHTML = `
     <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
@@ -3759,6 +4134,8 @@ function showOrderConfirmation(orderId, order) {
         <p><strong>Сума товарів:</strong> ${formatPrice(order.total)} ₴</p>
         
         ${commentSection}
+        
+        ${parcelsSection}
         
         <div class="manager-notice" style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
           <i class="fas fa-phone" style="color: #007bff; margin-right: 10px;"></i>
@@ -4440,7 +4817,7 @@ function viewOrderDetails(orderId) {
       const updatedDate = order.updatedAt ? order.updatedAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
       const ttnDate = order.ttnAddedAt ? order.ttnAddedAt.toDate().toLocaleString('uk-UA') : '';
       
-      // ДОБАВЛЕНО: Секция комментария
+      // Секция комментария
       const commentSection = order.comment ? `
         <div class="comment-section" style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
           <h4>Коментар клієнта:</h4>
@@ -4472,7 +4849,7 @@ function viewOrderDetails(orderId) {
         </div>
       ` : '';
       
-      // ДОБАВЛЕНО: Улучшенная кнопка отмены заказа
+      // Улучшенная кнопка отмены заказа
       const cancelButton = !adminMode && order.status === 'new' ? `
         <div style="margin: 1rem 0;">
           <button class="btn btn-danger" onclick="cancelOrder('${order.id}')" style="background: #e74c3c; color: white; padding: 10px 20px;">
@@ -4484,6 +4861,20 @@ function viewOrderDetails(orderId) {
         </div>
       ` : '';
       
+      // Информация о поставщиках, если есть
+      const suppliersSection = order.suppliers ? `
+        <div class="suppliers-info" style="margin: 1rem 0; padding: 1rem; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #3498db;">
+          <h4>Информация о поставщиках</h4>
+          <p>Заказ содержит товары от ${Object.keys(order.suppliers).length} поставщиков:</p>
+          <ul>
+            ${Object.entries(order.suppliers).map(([source, supplierData]) => `
+              <li><strong>${supplierData.name}</strong>: ${supplierData.itemsCount} товар(ов) на сумму ${formatPrice(supplierData.total)} ₴</li>
+            `).join('')}
+          </ul>
+          <p><i class="fas fa-info-circle"></i> Каждый поставщик отправит свою часть заказа отдельной посылкой.</p>
+        </div>
+      ` : '';
+      
       modalContent.innerHTML = `
         <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
         <h3>Деталі замовлення #${order.id}</h3>
@@ -4492,6 +4883,7 @@ function viewOrderDetails(orderId) {
           ${ttnButton}
           ${cancelButton}
           ${commentSection}
+          ${suppliersSection}
           
           <div class="customer-info">
             <h4>Інформація про клієнта</h4>
@@ -5092,18 +5484,25 @@ function viewOrders() {
                     </div>
                 ` : '';
                 
-                // ДОБАВЛЕНО: Комментарий к заказу
+                // Комментарий к заказу
                 const commentSection = order.comment ? `
                     <div class="order-comment">
                         <p><strong>Ваш коментар:</strong> "${order.comment}"</p>
                     </div>
                 ` : '';
                 
-                // ДОБАВЛЕНО: Кнопка отмены только для заказов со статусом "new"
+                // Кнопка отмены только для заказов со статусом "new"
                 const cancelButton = order.status === 'new' ? `
                     <button class="btn btn-danger" onclick="cancelOrder('${order.id}')">
                         <i class="fas fa-times"></i> Скасувати
                     </button>
+                ` : '';
+                
+                // Информация о поставщиках, если есть
+                const suppliersInfo = order.suppliers ? `
+                    <div class="suppliers-badge">
+                        <i class="fas fa-boxes"></i> ${Object.keys(order.suppliers).length} поставщик(ов)
+                    </div>
                 ` : '';
                 
                 ordersHTML += `
@@ -5126,6 +5525,7 @@ function viewOrders() {
                         </div>
                         
                         ${commentSection}
+                        ${suppliersInfo}
                         ${ttnSection}
                         
                         <div class="order-actions">
@@ -5255,6 +5655,11 @@ function optimizeModalForMobile() {
       }
     });
   }
+}
+
+// Вспомогательная функция для отслеживания посылок (заглушка)
+function trackParcel(parcelNumber) {
+  showNotification(`Функція відстеження посилки ${parcelNumber + 1} знаходиться в розробці`, "info");
 }
 
 // Инициализация при загрузке страницы
