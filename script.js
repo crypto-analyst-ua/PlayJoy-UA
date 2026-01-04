@@ -13,6 +13,10 @@ const EMAILJS_SERVICE_ID = "boltmaster-2025";
 const EMAILJS_TEMPLATE_ID = "template_2csi2fp";
 const EMAILJS_USER_ID = "hYmYimcQ5x5Mu_skB";
 
+// ===== ДОБАВЛЕНО: КОНСТАНТА ДЛЯ WHATSAPP =====
+const WHATSAPP_PHONE = "380684296978"; // Замените на реальный номер
+const WHATSAPP_TEXT_ENCODING = "UTF-8";
+
 // Массив файлів з товарами
 const PRODUCT_FILES = [
     'toys1.json',
@@ -1261,6 +1265,102 @@ function setupPageCounter() {
   }
 }
 
+// ===== ФУНКЦИЯ ДЛЯ ФОРМИРОВАНИЯ СООБЩЕНИЯ WHATSAPP =====
+function formatWhatsAppOrderMessage() {
+    let message = "🚀 *ЗАМОВЛЕННЯ ЧЕРЕЗ WHATSAPP*\n\n";
+    
+    // Добавляем информацию о пользователе
+    if (currentUser) {
+        message += `👤 *Клієнт:* ${currentUser.displayName || currentUser.email}\n`;
+    } else {
+        message += `👤 *Клієнт:* (вкажіть ім'я)\n`;
+    }
+    
+    message += `📞 *Телефон:* (вкажіть номер)\n`;
+    message += `📧 *Email:* ${currentUser ? currentUser.email : '(вкажіть email)'}\n\n`;
+    
+    // Добавляем товары
+    message += "🛒 *Товари:*\n";
+    let total = 0;
+    let itemCount = 0;
+    
+    for (const [productId, quantity] of Object.entries(cart)) {
+        const product = products.find(p => p.id === productId);
+        if (product) {
+            itemCount++;
+            const itemTotal = product.price * quantity;
+            total += itemTotal;
+            
+            message += `${itemCount}. ${product.title}\n`;
+            message += `   ▸ Кількість: ${quantity} шт.\n`;
+            message += `   ▸ Ціна: ${formatPrice(product.price)} ₴\n`;
+            message += `   ▸ Сума: ${formatPrice(itemTotal)} ₴\n`;
+            
+            // Добавляем информацию о поставщике
+            if (product.source) {
+                message += `   ▸ Постачальник: ${getSupplierName(product.source)}\n`;
+            }
+            
+            message += "\n";
+        }
+    }
+    
+    // Добавляем итоги
+    message += "📊 *Підсумок:*\n";
+    message += `▸ Кількість товарів: ${Object.values(cart).reduce((a, b) => a + b, 0)} шт.\n`;
+    message += `▸ Загальна сума: ${formatPrice(total)} ₴\n\n`;
+    
+    // Добавляем инструкции
+    message += "📋 *Інструкції:*\n";
+    message += "1. Підтвердіть наявність товарів\n";
+    message += "2. Уточніть терміни доставки\n";
+    message += "3. Надішліть реквізити для оплати\n\n";
+    
+    // Добавляем заметку о нескольких поставщиках
+    const suppliers = new Set();
+    for (const [productId] of Object.entries(cart)) {
+        const product = products.find(p => p.id === productId);
+        if (product && product.source) {
+            suppliers.add(getSupplierName(product.source));
+        }
+    }
+    
+    if (suppliers.size > 1) {
+        message += "⚠️ *Увага:* Замовлення містить товари від різних постачальників. \n";
+        message += "Доставка може бути здійснена кількома окремими посилками.\n\n";
+    }
+    
+    message += "🕒 *Час створення:* " + new Date().toLocaleString('uk-UA') + "\n";
+    message += "🆔 *ID кошика:* " + Date.now().toString(36).toUpperCase();
+    
+    return encodeURIComponent(message);
+}
+
+// ===== ФУНКЦИЯ ДЛЯ ОТКРЫТИЯ WHATSAPP =====
+function openWhatsAppOrder() {
+    if (Object.keys(cart).length === 0) {
+        showNotification("Кошик порожній. Додайте товари для замовлення.", "warning");
+        return;
+    }
+    
+    const message = formatWhatsAppOrderMessage();
+    const whatsappUrl = `https://wa.me/${WHATSAPP_PHONE}?text=${message}`;
+    
+    // Открываем в новом окне
+    window.open(whatsappUrl, '_blank');
+    
+    // Показываем подтверждение
+    showNotification("Відкривається WhatsApp для оформлення замовлення", "info");
+    
+    // Закрываем корзину
+    closeModal();
+    
+    // Сохраняем статистику
+    if (currentUser) {
+        trackUserBehavior('whatsapp_order', currentUser.uid);
+    }
+}
+
 // Функція отправки email с данными заказа
 function sendOrderEmail(orderId, order) {
   let itemsList = '';
@@ -2252,6 +2352,103 @@ function addSupplierStyles() {
   document.head.appendChild(style);
 }
 
+// ===== ДОБАВЛЕНО: СТИЛИ ДЛЯ КНОПКИ WHATSAPP =====
+function addWhatsAppStyles() {
+  if (document.getElementById('whatsapp-styles')) return;
+  
+  const style = document.createElement('style');
+  style.id = 'whatsapp-styles';
+  style.textContent = `
+    .btn-whatsapp {
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    
+    .btn-whatsapp:hover {
+      background: linear-gradient(135deg, #128C7E 0%, #075E54 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(18, 140, 126, 0.3);
+    }
+    
+    .btn-whatsapp:active {
+      transform: translateY(0);
+    }
+    
+    .btn-whatsapp i {
+      font-size: 1.2em;
+    }
+    
+    .cart-action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+    
+    .cart-footer {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .cart-total {
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #2c3e50;
+      text-align: center;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: var(--border-radius);
+    }
+    
+    @media (min-width: 768px) {
+      .cart-action-buttons {
+        flex-direction: row;
+      }
+      
+      .btn-whatsapp, .btn-buy {
+        flex: 1;
+      }
+    }
+    
+    /* Информация о WhatsApp заказе */
+    .whatsapp-info {
+      background: #e8f5e9;
+      border-left: 4px solid #25D366;
+      padding: 12px;
+      margin: 15px 0;
+      border-radius: 0 8px 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .whatsapp-info i {
+      color: #25D366;
+      font-size: 1.2em;
+    }
+    
+    .whatsapp-info p {
+      margin: 0;
+      font-size: 0.9em;
+      color: #2e7d32;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // ===== ФУНКЦИЯ ДЛЯ ГРУППИРОВКИ ТОВАРОВ ПО ПОСТАВЩИКАМ =====
 function groupCartItemsBySupplier() {
   const groupedBySource = {};
@@ -2289,6 +2486,7 @@ function initApp() {
   initEnhancedSearch();
   initAds();
   addSupplierStyles(); // Добавляем стили для поставщиков
+  addWhatsAppStyles(); // Добавляем стили для WhatsApp
 
   // Показать скелетоны сразу при инициализации
   showEnhancedLoadingSkeleton();
@@ -3661,7 +3859,7 @@ function changeQuantity(delta) {
   input.value = value;
 }
 
-// Відкриття кошика (ПЕРЕПИСАНА ВЕРСІЯ З ГРУПУВАННЯМ ЗА ПОСТАЧАЛЬНИКАМИ)
+// ===== ОБНОВЛЕННАЯ ФУНКЦИЯ OPENСART С КНОПКОЙ WHATSAPP =====
 function openCart() {
   const modalContent = document.getElementById("modal-content");
   
@@ -3746,6 +3944,7 @@ function openCart() {
       }
     }
     
+    // === ДОБАВЛЕНА КНОПКА WHATSAPP ===
     modalContent.innerHTML = `
       <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
       <h3>Кошик</h3>
@@ -3755,7 +3954,12 @@ function openCart() {
       <div id="cart-ad-related"></div>
       <div class="cart-footer">
         <div class="cart-total">Загальна сума: ${formatPrice(total)} ₴</div>
-        <button class="btn btn-buy" onclick="checkout()">Оформити замовлення</button>
+        <div class="cart-action-buttons">
+          <button class="btn btn-whatsapp" onclick="openWhatsAppOrder()">
+            <i class="fab fa-whatsapp"></i> Замовити через WhatsApp
+          </button>
+          <button class="btn btn-buy" onclick="checkout()">Оформити замовлення</button>
+        </div>
       </div>
     `;
     
