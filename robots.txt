@@ -1,14 +1,16 @@
 User-agent: *
 Allow: /
+Disallow: /*.css$
+Disallow: /*.js$
+Disallow: /*.png$
+Disallow: /*.jpg$
+Disallow: /*.jpeg$
+Disallow: /*.gif$
+Disallow: /*.ico$
+Disallow: /*.svg$
+Disallow: /*.xml$
+Disallow: /*.json$
+Disallow: /*.txt$
+Disallow: /*.webp$
 
-# Забороняємо службові файли
-Disallow: /admin/
-Disallow: /cart/
-Disallow: /checkout/
-
-# Дозволяємо пошуковим системам індексувати hash URL
-Allow: /*?*
-Allow: /#*
-
-# Sitemap
 Sitemap: https://playjoy-ua.web.app/sitemap.xml
