@@ -32,187 +32,487 @@
     <link rel="manifest" href="/site.webmanifest">
     <meta name="theme-color" content="#FF6B8B">
 
-    <!-- Стили для черного текста с белой обводкой и карточек категорий -->
-<style>
-    .logo-text .logo-name {
-        color: #000000 !important;
-        font-weight: 700;
-        text-shadow: 
-            0 0 5px #ffffff,
-            0 0 10px #ffffff,
-            0 0 15px #ffffff,
-            0 0 20px #ffffff,
-            0 0 25px #ffffff,
-            0 0 30px #ffffff !important;
-        -webkit-text-stroke: 1px #ffffff !important;
-        background: none !important;
-        -webkit-background-clip: initial !important;
-        -webkit-text-fill-color: #000000 !important;
-    }
-    
-    /* Стили для иконок контактов в футере */
-    .contact-info div {
-        margin: 8px 0;
-        display: flex;
-        align-items: center;
-    }
+    <!-- Стили для черного текста с белой обводкой и премиальных карточек категорий -->
+    <style>
+        .logo-text .logo-name {
+            color: #000000 !important;
+            font-weight: 700;
+            text-shadow: 
+                0 0 5px #ffffff,
+                0 0 10px #ffffff,
+                0 0 15px #ffffff,
+                0 0 20px #ffffff,
+                0 0 25px #ffffff,
+                0 0 30px #ffffff !important;
+            -webkit-text-stroke: 1px #ffffff !important;
+            background: none !important;
+            -webkit-background-clip: initial !important;
+            -webkit-text-fill-color: #000000 !important;
+        }
+        
+        /* Стили для иконок контактов в футере */
+        .contact-info div {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+        }
 
-    .contact-info i {
-        width: 20px;
-        margin-right: 10px;
-        text-align: center;
-        font-size: 1.2em;
-    }
+        .contact-info i {
+            width: 20px;
+            margin-right: 10px;
+            text-align: center;
+            font-size: 1.2em;
+        }
 
-    .contact-info a {
-        color: #fff;
-        text-decoration: none;
-        transition: color 0.3s;
-    }
+        .contact-info a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
 
-    .contact-info a:hover {
-        color: #FFD166;
-        text-decoration: underline;
-    }
+        .contact-info a:hover {
+            color: #FFD166;
+            text-decoration: underline;
+        }
 
-    /* Специфичные цвета для мессенджеров */
-    .contact-info .fa-whatsapp { color: #25D366; }
-    .contact-info .fa-viber { color: #7360F2; }
-    .contact-info .fa-telegram { color: #0088cc; }
-    .contact-info .fa-facebook { color: #1877F2; }
-    .contact-info .fa-instagram { color: #E4405F; }
-    .contact-info .fa-phone-alt { color: #2ecc71; }
+        /* Специфичные цвета для мессенджеров */
+        .contact-info .fa-whatsapp { color: #25D366; }
+        .contact-info .fa-viber { color: #7360F2; }
+        .contact-info .fa-telegram { color: #0088cc; }
+        .contact-info .fa-facebook { color: #1877F2; }
+        .contact-info .fa-instagram { color: #E4405F; }
+        .contact-info .fa-phone-alt { color: #2ecc71; }
 
-    /* Стили для карточек категорий - уменьшенный размер */
-    .source-tabs {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin: 15px 0;
-    }
-
-    .gender-filter {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin: 15px 0;
-    }
-
-    .category-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 140px;
-        height: 120px;
-        background: linear-gradient(135deg, #FF9A9E 0%, #FAD0C4 100%);
-        border-radius: 12px;
-        padding: 15px 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-        border: 2px solid transparent;
-    }
-
-    .category-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
-        border-color: #FF6B8B;
-    }
-
-    .category-card.active {
-        background: linear-gradient(135deg, #FF6B8B 0%, #FF8E53 100%);
-        border-color: #FF6B8B;
-        box-shadow: 0 6px 15px rgba(255, 107, 139, 0.25);
-    }
-
-    .category-icon {
-        font-size: 2rem;
-        margin-bottom: 10px;
-        color: #fff;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .category-title {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #fff;
-        line-height: 1.2;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-    }
-
-    /* Цвета для разных категорий */
-    .source-tabs .category-card:nth-child(1) { /* Все игрушки */
-        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-    }
-
-    .source-tabs .category-card:nth-child(2) { /* Развивающие */
-        background: linear-gradient(135deg, #42e695 0%, #3bb2b8 100%);
-    }
-
-    .source-tabs .category-card:nth-child(3) { /* Фантазия */
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    }
-
-    .gender-filter .category-card:nth-child(1) { /* Все товары */
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    }
-
-    .gender-filter .category-card:nth-child(2) { /* Для девочек */
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    }
-
-    .gender-filter .category-card:nth-child(3) { /* Для мальчиков */
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    }
-
-    /* Адаптивность */
-    @media (max-width: 768px) {
-        .source-tabs,
-        .gender-filter {
+        /* ПРЕМИАЛЬНЫЕ СТИЛИ ДЛЯ ОБЪЕДИНЕННЫХ КАРТОЧЕК КАТЕГОРИЙ */
+        .category-tabs {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin: 30px 0;
             justify-content: center;
-            gap: 10px;
+            perspective: 1000px;
         }
-        
-        .category-card {
-            width: 120px;
-            height: 110px;
-            padding: 12px 8px;
-        }
-        
-        .category-icon {
-            font-size: 1.7rem;
-            margin-bottom: 8px;
-        }
-        
-        .category-title {
-            font-size: 0.75rem;
-        }
-    }
 
-    @media (max-width: 480px) {
-        .source-tabs,
-        .gender-filter {
-            gap: 8px;
-        }
-        
         .category-card {
-            width: 100px;
-            height: 95px;
-            padding: 10px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 200px;
+            height: 180px;
+            background: linear-gradient(145deg, 
+                var(--card-light, #ffffff) 0%, 
+                var(--card-color-1, #6a11cb) 30%, 
+                var(--card-color-2, #2575fc) 100%);
+            border-radius: 25px;
+            padding: 25px 20px;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transform-style: preserve-3d;
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.2),
+                0 5px 15px rgba(0, 0, 0, 0.1),
+                inset 0 0 1px rgba(255, 255, 255, 0.4);
         }
-        
+
+        /* Эффект стекла */
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.2) 0%, 
+                rgba(255, 255, 255, 0.05) 50%, 
+                transparent 100%);
+            z-index: -1;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            opacity: 0.6;
+        }
+
+        /* Внешнее свечение */
+        .category-card::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                var(--glow-color-1, #ff6b6b), 
+                var(--glow-color-2, #4ecdc4), 
+                var(--glow-color-1, #ff6b6b));
+            border-radius: 27px;
+            z-index: -2;
+            opacity: 0;
+            filter: blur(15px);
+            transition: opacity 0.5s ease;
+        }
+
+        /* Эффект при наведении */
+        .category-card:hover {
+            transform: translateY(-15px) rotateX(5deg) rotateY(5deg) scale(1.05);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.3),
+                0 15px 25px rgba(0, 0, 0, 0.2),
+                inset 0 0 3px rgba(255, 255, 255, 0.6);
+        }
+
+        .category-card:hover::after {
+            opacity: 0.7;
+            animation: glow-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 0.9; }
+        }
+
+        /* Активное состояние */
+        .category-card.active {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 
+                0 25px 50px rgba(var(--glow-rgb, 106, 17, 203), 0.4),
+                0 10px 20px rgba(0, 0, 0, 0.2),
+                inset 0 0 5px rgba(255, 255, 255, 0.8);
+            animation: active-float 4s ease-in-out infinite;
+        }
+
+        @keyframes active-float {
+            0%, 100% { transform: translateY(-8px) scale(1.03); }
+            50% { transform: translateY(-12px) scale(1.04); }
+        }
+
+        .category-card.active::after {
+            opacity: 1;
+            animation: active-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes active-glow {
+            0%, 100% { 
+                opacity: 1;
+                filter: blur(15px);
+            }
+            50% { 
+                opacity: 0.8;
+                filter: blur(20px);
+            }
+        }
+
+        /* Иконка */
         .category-icon {
-            font-size: 1.5rem;
-            margin-bottom: 6px;
+            font-size: 3.2rem;
+            margin-bottom: 18px;
+            color: #fff;
+            text-shadow: 
+                0 2px 10px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(255, 255, 255, 0.5);
+            transition: all 0.5s ease;
+            position: relative;
+            z-index: 2;
         }
-        
+
+        .category-card:hover .category-icon {
+            transform: scale(1.2) rotateY(15deg);
+            text-shadow: 
+                0 2px 15px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(255, 255, 255, 0.7);
+        }
+
+        .category-card.active .category-icon {
+            animation: icon-sparkle 3s ease-in-out infinite;
+        }
+
+        @keyframes icon-sparkle {
+            0%, 100% { 
+                transform: scale(1.15);
+                filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            }
+            50% { 
+                transform: scale(1.25);
+                filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8));
+            }
+        }
+
+        /* Заголовок */
         .category-title {
-            font-size: 0.65rem;
+            font-size: 1rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.4;
+            text-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.4),
+                0 1px 3px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+            transition: all 0.4s ease;
+            padding: 0 8px;
+            position: relative;
+            z-index: 2;
+            text-transform: uppercase;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-    }
-</style>
+
+        .category-card:hover .category-title {
+            transform: translateY(5px);
+            letter-spacing: 0.7px;
+            text-shadow: 
+                0 2px 12px rgba(0, 0, 0, 0.5),
+                0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Декоративные элементы */
+        .category-card .corner-decoration {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .category-card .corner-decoration:nth-child(1) {
+            top: 10px;
+            left: 10px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .category-card .corner-decoration:nth-child(2) {
+            top: 10px;
+            right: 10px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .category-card .corner-decoration:nth-child(3) {
+            bottom: 10px;
+            left: 10px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .category-card .corner-decoration:nth-child(4) {
+            bottom: 10px;
+            right: 10px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .category-card:hover .corner-decoration {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* Цветовые схемы для разных категорий */
+        /* Для "Всі іграшки" */
+        .category-tabs .category-card:nth-child(1) {
+            --card-light: #a78bfa;
+            --card-color-1: #6a11cb;
+            --card-color-2: #2575fc;
+            --glow-color-1: #6a11cb;
+            --glow-color-2: #2575fc;
+            --glow-rgb: 106, 17, 203;
+        }
+
+        /* Для "Розвиваючі іграшки" */
+        .category-tabs .category-card:nth-child(2) {
+            --card-light: #6ee7b7;
+            --card-color-1: #42e695;
+            --card-color-2: #3bb2b8;
+            --glow-color-1: #42e695;
+            --glow-color-2: #3bb2b8;
+            --glow-rgb: 66, 230, 149;
+        }
+
+        /* Для "Іграшки для гри та фантазії" */
+        .category-tabs .category-card:nth-child(3) {
+            --card-light: #f9a8d4;
+            --card-color-1: #f093fb;
+            --card-color-2: #f5576c;
+            --glow-color-1: #f093fb;
+            --glow-color-2: #f5576c;
+            --glow-rgb: 240, 147, 251;
+        }
+
+        /* Для "Універсальні іграшки" */
+        .category-tabs .category-card:nth-child(4) {
+            --card-light: #93c5fd;
+            --card-color-1: #4facfe;
+            --card-color-2: #00f2fe;
+            --glow-color-1: #4facfe;
+            --glow-color-2: #00f2fe;
+            --glow-rgb: 79, 172, 254;
+        }
+
+        /* Для "Для дівчаток" */
+        .category-tabs .category-card:nth-child(5) {
+            --card-light: #f9a8d4;
+            --card-color-1: #f093fb;
+            --card-color-2: #f5576c;
+            --glow-color-1: #f093fb;
+            --glow-color-2: #f5576c;
+            --glow-rgb: 240, 147, 251;
+        }
+
+        /* Для "Для хлопчиків" */
+        .category-tabs .category-card:nth-child(6) {
+            --card-light: #93c5fd;
+            --card-color-1: #667eea;
+            --card-color-2: #764ba2;
+            --glow-color-1: #667eea;
+            --glow-color-2: #764ba2;
+            --glow-rgb: 102, 126, 234;
+        }
+
+        /* Эффект нажатия */
+        .category-card:active {
+            transform: translateY(-5px) scale(0.98);
+            transition: transform 0.1s ease;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1200px) {
+            .category-tabs {
+                gap: 20px;
+            }
+            
+            .category-card {
+                width: 180px;
+                height: 165px;
+                padding: 22px 18px;
+            }
+            
+            .category-icon {
+                font-size: 2.8rem;
+                margin-bottom: 15px;
+            }
+            
+            .category-title {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .category-tabs {
+                gap: 15px;
+            }
+            
+            .category-card {
+                width: 160px;
+                height: 150px;
+                padding: 20px 15px;
+                border-radius: 20px;
+            }
+            
+            .category-icon {
+                font-size: 2.5rem;
+                margin-bottom: 12px;
+            }
+            
+            .category-title {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .category-tabs {
+                gap: 12px;
+            }
+            
+            .category-card {
+                width: 140px;
+                height: 135px;
+                padding: 18px 12px;
+                border-radius: 18px;
+            }
+            
+            .category-icon {
+                font-size: 2.2rem;
+                margin-bottom: 10px;
+            }
+            
+            .category-title {
+                font-size: 0.75rem;
+                font-weight: 700;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .category-tabs {
+                gap: 10px;
+            }
+            
+            .category-card {
+                width: 125px;
+                height: 120px;
+                padding: 15px 10px;
+                border-radius: 16px;
+            }
+            
+            .category-icon {
+                font-size: 1.9rem;
+                margin-bottom: 8px;
+            }
+            
+            .category-title {
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .category-tabs {
+                gap: 8px;
+            }
+            
+            .category-card {
+                width: 115px;
+                height: 110px;
+                padding: 12px 8px;
+                border-radius: 14px;
+            }
+            
+            .category-icon {
+                font-size: 1.7rem;
+                margin-bottom: 6px;
+            }
+            
+            .category-title {
+                font-size: 0.65rem;
+                line-height: 1.2;
+            }
+        }
+
+        /* Анимация появления карточек */
+        @keyframes card-appear {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9) rotateX(-10deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotateX(0);
+            }
+        }
+
+        .category-card {
+            animation: card-appear 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        .category-tabs .category-card:nth-child(1) { animation-delay: 0.1s; }
+        .category-tabs .category-card:nth-child(2) { animation-delay: 0.2s; }
+        .category-tabs .category-card:nth-child(3) { animation-delay: 0.3s; }
+        .category-tabs .category-card:nth-child(4) { animation-delay: 0.4s; }
+        .category-tabs .category-card:nth-child(5) { animation-delay: 0.5s; }
+        .category-tabs .category-card:nth-child(6) { animation-delay: 0.6s; }
+    </style>
 
     <!-- Объединенная JSON-LD Schema -->
     <script type="application/ld+json">
@@ -433,43 +733,65 @@
             <div class="products-header">
                 <h1 id="products-title">Каталог іграшок для дітей та підлітків — купити в Україні з доставкою</h1>
                 
-                <!-- Обновленные карточки категорий с логотипами -->
-                <div class="source-tabs" role="tablist">
+                <!-- ОБЪЕДИНЕННЫЕ КАРТОЧКИ КАТЕГОРИЙ -->
+                <div class="category-tabs" role="tablist">
                     <div class="category-card active" role="tab" onclick="switchSource('all')" aria-selected="true">
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
                         <div class="category-icon">
                             <i class="fas fa-cubes"></i>
                         </div>
                         <div class="category-title">Всі іграшки</div>
                     </div>
                     <div class="category-card" role="tab" onclick="switchSource('toys1.json')" aria-selected="false">
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
                         <div class="category-icon">
                             <i class="fas fa-brain"></i>
                         </div>
-                        <div class="category-title">Розвиваючі іграшки для малюків</div>
+                        <div class="category-title">Розвиваючі іграшки</div>
                     </div>
                     <div class="category-card" role="tab" onclick="switchSource('toys2.json')" aria-selected="false">
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
                         <div class="category-icon">
                             <i class="fas fa-magic"></i>
                         </div>
-                        <div class="category-title">Іграшки для гри та фантазії</div>
+                        <div class="category-title">Для гри та фантазії</div>
                     </div>
-                </div>
-                
-                <!-- Обновленные карточки гендерных фильтров -->
-                <div class="gender-filter" style="margin: 15px 0;">
+                    
+                    <!-- Гендерные фильтры -->
                     <div class="category-card active" onclick="filterByGender('all')">
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
                         <div class="category-icon">
                             <i class="fas fa-box-open"></i>
                         </div>
-                        <div class="category-title">Універсальні іграшки</div>
+                        <div class="category-title">Універсальні</div>
                     </div>
                     <div class="category-card" onclick="filterByGender('girl')">
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
                         <div class="category-icon">
                             <i class="fas fa-female"></i>
                         </div>
                         <div class="category-title">Для дівчаток</div>
                     </div>
                     <div class="category-card" onclick="filterByGender('boy')">
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
+                        <div class="corner-decoration"></div>
                         <div class="category-icon">
                             <i class="fas fa-male"></i>
                         </div>
