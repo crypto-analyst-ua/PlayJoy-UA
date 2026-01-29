@@ -1,37 +1,35 @@
 /* Подключение шрифтов */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@400;600;700&display=swap');
 
-/* Обновленная современная цветовая палитра - СВЕТЛАЯ ТЕМА ДЛЯ ДЕТСКОГО МАГАЗИНА */
+/* Обновленная цветовая палитра - КИТАЙСКИЕ ТОВАРЫ */
 :root {
-  --primary: #FF7BA3; /* Нежный розовый - мягче и современнее */
-  --primary-light: #FFB0C5;
-  --primary-dark: #FF5280;
-  --secondary: #70CFFF; /* Светлый аквамариновый */
-  --secondary-light: #A3E1FF;
-  --secondary-dark: #3DB9FF;
-  --accent: #FFCF70; /* Теплый золотистый желтый */
-  --accent-light: #FFE4A3;
-  --accent-dark: #FFBF3D;
-  --success: #1ED6A7; /* Изумрудный зеленый */
-  --warning: #FFB340; /* Мягкий оранжевый */
-  --danger: #FF6B7A; /* Кораллово-красный */
-  --light: #FFFCF7; /* Теплый кремовый */
-  --dark: #364156; /* Глубокий сине-серый */
-  --gray: #A0ABC0;
-  --gray-light: #E8EDF5;
-  --gray-lighter: #F5F8FD;
+  --primary: #C62828; /* Китайский красный - основной цвет */
+  --primary-light: #E53935;
+  --primary-dark: #B71C1C;
+  --secondary: #FF9800; /* Золотой/оранжевый - богатство, успех */
+  --secondary-light: #FFB74D;
+  --secondary-dark: #F57C00;
+  --accent: #2196F3; /* Синий - надежность, технологии */
+  --accent-light: #64B5F6;
+  --accent-dark: #1976D2;
+  --tech-blue: #1565C0; /* Технологический синий */
+  --tech-green: #4CAF50; /* Зеленый для успеха */
+  --warning: #FFC107; /* Желтый для предупреждений */
+  --danger: #F44336; /* Красный для ошибок */
+  --success: #2E7D32; /* Зеленый для успеха */
+  --light: #FFF8F0; /* Светлый кремовый фон */
+  --dark: #212121; /* Темный для текста */
+  --gray: #757575;
+  --gray-light: #BDBDBD;
+  --gray-lighter: #EEEEEE;
   --white: #FFFFFF;
   --surface: #FFFFFF;
-  --surface-2: #FFFCF7;
-  --surface-3: #F9FBFF; /* Новый мягкий голубоватый фон */
-  --mint: #8CEEBF; /* Свежий мятный */
-  --lavender: #C5A8FF; /* Нежный лавандовый */
-  --peach: #FFB8A8; /* Мягкий персиковый */
-  --shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
-  --shadow-hover: 0 20px 30px -8px rgba(0, 0, 0, 0.12), 0 12px 18px -8px rgba(0, 0, 0, 0.06);
-  --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --border-radius: 14px;
-  --border-radius-lg: 18px;
+  --surface-2: #FFF8F0;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --border-radius: 12px;
+  --border-radius-lg: 16px;
 }
 
 /* Общие стили */
@@ -50,7 +48,12 @@ body {
   font-family: 'Roboto', sans-serif;
   line-height: 1.6;
   color: var(--dark);
-  background: linear-gradient(135deg, #FFF5F8 0%, #F5FAFF 25%, #FFFDF0 50%, #F0FFF8 75%, #FFFCF7 100%);
+  background: linear-gradient(135deg, 
+    #FFF8F0 0%, 
+    #FFEBEE 25%, 
+    #FFF3E0 50%, 
+    #F3E5F5 75%, 
+    #E8F5E8 100%);
   background-attachment: fixed;
   background-size: cover;
   min-height: 100vh;
@@ -69,16 +72,15 @@ h1, h2, h3, h4, h5, h6 {
 
 h1 {
   font-size: clamp(1.8rem, 5vw, 2.5rem);
-  background: linear-gradient(45deg, var(--primary), var(--accent), var(--lavender));
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 2px 2px 8px rgba(0,0,0,0.05);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
 }
 
 h2 {
   font-size: clamp(1.5rem, 4vw, 2rem);
-  border-bottom: 3px solid;
-  border-image: linear-gradient(to right, var(--secondary), var(--mint)) 1;
+  border-bottom: 2px solid var(--secondary);
   padding-bottom: 0.5rem;
   display: inline-block;
 }
@@ -88,16 +90,14 @@ h3 {
   color: var(--primary);
 }
 
-/* Хедер - разноцветный градиент для детского магазина */
+/* Хедер - градиент для китайского магазина */
 header {
   background: linear-gradient(135deg, 
-    var(--primary) 0%, 
-    var(--secondary) 25%, 
-    var(--accent) 50%, 
-    var(--mint) 75%, 
-    var(--lavender) 100%);
-  background-size: 200% 200%;
-  animation: gradientShift 15s ease infinite;
+    #C62828 0%, 
+    #FF9800 25%, 
+    #2196F3 50%, 
+    #4CAF50 75%, 
+    #FFC107 100%);
   color: var(--white);
   padding: 1rem;
   box-shadow: var(--shadow);
@@ -105,12 +105,6 @@ header {
   top: 0;
   z-index: 1000;
   transition: var(--transition);
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 /* Новая структура шапки для мобильных устройств */
@@ -154,8 +148,7 @@ header {
 .search-container-mobile input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(255, 123, 163, 0.15), 
-              0 4px 12px rgba(255, 123, 163, 0.1);
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.1);
 }
 
 .logo {
@@ -173,11 +166,11 @@ header {
 .logo i {
   font-size: clamp(1.8rem, 5vw, 2.5rem);
   color: var(--white);
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: var(--primary-light);
   padding: 0.5rem;
   border-radius: 50%;
-  box-shadow: 0 0 20px rgba(255, 123, 163, 0.5);
-  animation: pulse 2s infinite ease-in-out;
+  box-shadow: 0 0 15px rgba(229, 57, 53, 0.4);
+  animation: pulse 2s infinite;
   flex-shrink: 0;
 }
 
@@ -285,8 +278,7 @@ header {
 .search-container input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(255, 123, 163, 0.15), 
-              0 4px 12px rgba(255, 123, 163, 0.1);
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.1);
 }
 
 .search-container:focus-within {
@@ -319,8 +311,7 @@ select {
 
 select:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 207, 112, 0.15);
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.1);
 }
 
 /* Кнопки */
@@ -350,7 +341,7 @@ select:focus {
 }
 
 .btn-admin {
-  background: linear-gradient(135deg, var(--secondary) 0%, var(--lavender) 100%);
+  background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
   color: var(--white);
 }
 
@@ -359,7 +350,7 @@ select:focus {
 }
 
 .btn-cart {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--peach) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: var(--white);
   position: relative;
 }
@@ -372,7 +363,7 @@ select:focus {
   position: absolute;
   top: -8px;
   right: -8px;
-  background: linear-gradient(135deg, var(--danger), #FF8A9B);
+  background: var(--danger);
   color: var(--white);
   border-radius: 50%;
   width: 22px;
@@ -382,18 +373,12 @@ select:focus {
   justify-content: center;
   font-size: 0.8rem;
   font-weight: bold;
-  animation: pulseGlow 1.5s infinite alternate;
+  animation: bounce 1s infinite alternate;
 }
 
-@keyframes pulseGlow {
-  from {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 107, 122, 0.7);
-  }
-  to {
-    transform: scale(1.1);
-    box-shadow: 0 0 0 6px rgba(255, 107, 122, 0);
-  }
+@keyframes bounce {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
 }
 
 .btn-detail {
@@ -406,12 +391,12 @@ select:focus {
 }
 
 .btn-buy {
-  background: linear-gradient(135deg, var(--success) 0%, var(--mint) 100%);
+  background: linear-gradient(135deg, var(--success) 0%, #2E7D32 100%);
   color: var(--white);
 }
 
 .btn-buy:hover {
-  background: linear-gradient(135deg, #1dc79a 0%, #7de8c0 100%);
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
 }
 
 .btn-favorite {
@@ -428,7 +413,7 @@ select:focus {
 }
 
 .btn-favorite:hover {
-  background: rgba(255, 123, 163, 0.1);
+  background: rgba(198, 40, 40, 0.1);
   color: var(--secondary);
 }
 
@@ -462,7 +447,7 @@ main {
 
 /* Фильтры */
 .filters {
-  background: var(--surface-3);
+  background: var(--white);
   padding: 1.2rem;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow);
@@ -470,8 +455,6 @@ main {
   position: sticky;
   top: 90px;
   color: var(--dark);
-  border: 1px solid var(--gray-light);
-  backdrop-filter: blur(10px);
 }
 
 .filter-group {
@@ -505,7 +488,7 @@ main {
 .filter-group select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.1);
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
 .price-range {
@@ -575,7 +558,7 @@ main {
   color: var(--white);
 }
 
-/* СЕТКА КАРТОЧЕК - СВЕТЛЫЕ */
+/* СЕТКА КАРТОЧЕК */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -588,52 +571,23 @@ main {
 }
 
 .card {
-  background: linear-gradient(145deg, #ffffff, #fafafa);
+  background: var(--white);
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow);
   transition: var(--transition);
   position: relative;
-  animation: cardAppear 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: fadeIn 0.5s ease;
   color: var(--dark);
-  border: none;
+  border: 1px solid var(--gray-lighter);
   min-height: 420px;
   display: flex;
   flex-direction: column;
 }
 
-@keyframes cardAppear {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 .card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-5px);
   box-shadow: var(--shadow-hover);
-  background: linear-gradient(145deg, #ffffff, #f5f5f5);
-}
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(to right, var(--primary), var(--accent), var(--secondary));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 1;
-}
-
-.card:hover::before {
-  opacity: 1;
 }
 
 .card img {
@@ -705,31 +659,12 @@ main {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .card-actions .btn {
   flex: 1;
   min-width: 120px;
-  position: relative;
-  overflow: hidden;
-}
-
-.card-actions .btn::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.3), 
-    transparent);
-  transition: left 0.5s ease;
-}
-
-.card-actions .btn:hover::after {
-  left: 100%;
 }
 
 .card-badge {
@@ -748,7 +683,7 @@ main {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: var(--secondary);
+  background: var(--tech-blue);
   color: var(--white);
   padding: 0.3rem 0.6rem;
   border-radius: var(--border-radius);
@@ -778,9 +713,8 @@ main {
 }
 
 .pagination button:hover, .pagination button.active {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: var(--primary);
   color: var(--white);
-  box-shadow: 0 4px 12px rgba(255, 123, 163, 0.3);
 }
 
 /* Боковая панель */
@@ -818,8 +752,8 @@ aside h3 {
 }
 
 .featured-item img {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
   border-radius: var(--border-radius);
 }
@@ -880,41 +814,41 @@ aside h3 {
   display: block;
 }
 
-/* О магазине - СВЕТЛАЯ СЕКЦИЯ ДЛЯ ДЕТСКОГО МАГАЗИНА */
+/* О магазине - ДЛЯ КИТАЙСКОГО МАГАЗИНА */
 .about-section {
-  background: linear-gradient(135deg, #ffffff 0%, var(--surface-3) 50%, #ffffff 100%);
-  color: #364156;
+  background: linear-gradient(135deg, #ffffff 0%, var(--gray-lighter) 50%, #ffffff 100%);
+  color: #212121;
   padding: 2.5rem 0;
   margin: 2rem 0;
-  border: 1px solid rgba(255, 184, 168, 0.2);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #FFE0B2;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .about-section h1 {
-  color: #FF7BA3;
+  color: var(--primary);
   margin-bottom: 1.5rem;
   font-size: clamp(1.8rem, 5vw, 2.5rem);
 }
 
 .about-section h2 {
-  color: #FF7BA3;
+  color: var(--primary);
   font-size: clamp(1.5rem, 4vw, 2rem);
   margin-bottom: 1rem;
 }
 
 .about-section h3 {
-  color: #FF7BA3;
+  color: var(--primary);
   margin: 1.5rem 0 1rem;
   font-size: clamp(1.2rem, 3vw, 1.5rem);
 }
 
 .about-section h4 {
-  color: #FF7BA3;
+  color: var(--primary);
   margin: 1.5rem 0 1rem;
 }
 
 .about-section p {
-  color: #4A5568;
+  color: #212121;
   margin-bottom: 1rem;
   line-height: 1.6;
 }
@@ -927,7 +861,7 @@ aside h3 {
 .about-section li {
   margin-bottom: 0.8rem;
   line-height: 1.6;
-  color: #4A5568;
+  color: #212121;
 }
 
 .about-section strong {
@@ -942,26 +876,26 @@ aside h3 {
 }
 
 .about-section .highlight {
-  background: var(--surface-3);
+  background: var(--surface-2);
   padding: 1.5rem;
   border-radius: var(--border-radius);
-  border-left: 4px solid var(--accent-light);
-  color: #4A5568;
+  border-left: 4px solid var(--tech-blue);
+  color: #212121;
   margin: 1.5rem 0;
 }
 
 .about-section .container {
-  color: #4A5568;
+  color: #212121;
 }
 
 .about-section article {
-  color: #4A5568;
+  color: #212121;
   margin-bottom: 1.5rem;
 }
 
 .about-section ul li::before {
   content: "✓ ";
-  color: var(--accent);
+  color: var(--success);
   font-weight: bold;
   margin-right: 0.5rem;
 }
@@ -974,7 +908,7 @@ aside h3 {
 
 /* Футер */
 footer {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: var(--white);
   padding: 2rem 1.5rem;
   text-align: center;
@@ -1060,9 +994,7 @@ footer {
 }
 
 .modal-content {
-  background: var(--surface-3);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--white);
   border-radius: var(--border-radius-lg);
   padding: 2.5rem 1.5rem 1.5rem 1.5rem;
   width: 100%;
@@ -1070,7 +1002,7 @@ footer {
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   animation: modalFadeIn 0.3s ease;
   color: var(--dark);
 }
@@ -1098,7 +1030,7 @@ footer {
   transition: var(--transition);
   min-width: auto;
   min-height: auto;
-  padding: 0.5rem;
+  padding: 0.2rem;
   z-index: 10;
   width: 40px;
   height: 40px;
@@ -1109,15 +1041,16 @@ footer {
 }
 
 .modal-close:hover {
-  background: rgba(0, 0, 0, 0.1);
   color: var(--danger);
   transform: rotate(90deg);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .product-detail {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
+  padding-top: 0.5rem;
 }
 
 .product-image img {
@@ -1132,6 +1065,11 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.product-info h2 {
+  margin-top: 0;
+  padding-right: 2.5rem;
 }
 
 .detail-price {
@@ -1302,7 +1240,7 @@ footer {
 .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.1);
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
 .form-row {
@@ -1328,8 +1266,6 @@ footer {
   transform: translateY(100px);
   opacity: 0;
   transition: var(--transition);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .notification.show {
@@ -1352,17 +1288,14 @@ footer {
 
 /* Скелетоны */
 .skeleton-img, .skeleton-title, .skeleton-text, .skeleton-price {
-  background: linear-gradient(90deg, 
-    rgba(255, 255, 255, 0.1) 25%, 
-    rgba(255, 255, 255, 0.2) 50%, 
-    rgba(255, 255, 255, 0.1) 75%);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: var(--border-radius);
 }
 
 .skeleton-img {
-  height: 200px;
+  height: 280px;
   border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
@@ -1456,27 +1389,27 @@ footer {
 }
 
 .status-new {
-  background: linear-gradient(135deg, rgba(255, 123, 163, 0.15), rgba(255, 184, 168, 0.15));
+  background: rgba(198, 40, 40, 0.1);
   color: var(--primary);
 }
 
 .status-processing {
-  background: linear-gradient(135deg, rgba(255, 179, 64, 0.15), rgba(255, 207, 112, 0.15));
-  color: var(--warning);
+  background: rgba(255, 193, 7, 0.1);
+  color: #FFC107;
 }
 
 .status-shipped {
-  background: rgba(255, 209, 102, 0.1);
+  background: rgba(33, 150, 243, 0.1);
   color: var(--accent);
 }
 
 .status-delivered {
-  background: rgba(30, 214, 167, 0.1);
-  color: #1ED6A7;
+  background: rgba(46, 125, 50, 0.1);
+  color: #2E7D32;
 }
 
 .status-cancelled {
-  background: rgba(255, 107, 122, 0.1);
+  background: rgba(244, 67, 54, 0.1);
   color: var(--danger);
 }
 
@@ -1507,7 +1440,7 @@ footer {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(var(--primary), var(--secondary));
+  background: var(--primary-light);
   border-radius: 4px;
 }
 
@@ -1735,7 +1668,7 @@ button:focus, input:focus, select:focus, textarea:focus {
 
 /* Стили для информации о доставке */
 .delivery-notice {
-  background: rgba(255, 209, 102, 0.1);
+  background: rgba(33, 150, 243, 0.1);
   padding: 1rem;
   border-radius: var(--border-radius);
   margin: 1rem 0;
@@ -1764,7 +1697,9 @@ button:focus, input:focus, select:focus, textarea:focus {
 
 /* Исправление для модального окна правил */
 #rules-modal .modal-content {
-  padding: 2rem;
+  padding: 2.5rem 2rem 2rem 2rem;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 #rules-modal h2 {
@@ -1872,7 +1807,8 @@ button:focus, input:focus, select:focus, textarea:focus {
   }
   
   .modal-content {
-    padding: 1.2rem;
+    padding: 2.5rem 1rem 1rem 1rem;
+    margin: 1rem;
   }
   
   .detail-actions .btn {
@@ -1901,11 +1837,11 @@ button:focus, input:focus, select:focus, textarea:focus {
   }
   
   .search-container {
-    display: none !important; /* Скрываем обычный поиск */
+    display: none !important;
   }
   
   .search-container-mobile {
-    display: block !important; /* Показываем мобильный поиск */
+    display: block !important;
   }
   
   .logo {
@@ -1989,7 +1925,7 @@ button:focus, input:focus, select:focus, textarea:focus {
   }
   
   .card img {
-    height: 120px;
+    height: 200px;
   }
   
   .products-header {
@@ -2002,7 +1938,8 @@ button:focus, input:focus, select:focus, textarea:focus {
   }
   
   .modal-content {
-    padding: 1rem;
+    padding: 2.2rem 0.8rem 0.8rem 0.8rem;
+    margin: 0.5rem;
     width: 95%;
     max-height: 95vh;
   }
@@ -2014,6 +1951,8 @@ button:focus, input:focus, select:focus, textarea:focus {
   
   .cart-item-image {
     align-self: center;
+    width: 80px;
+    height: 80px;
   }
   
   .cart-item-actions {
@@ -2242,7 +2181,7 @@ button:focus, input:focus, select:focus, textarea:focus {
   }
   
   .card img {
-    height: 100px;
+    height: 180px;
   }
   
   .card h3 {
@@ -2271,7 +2210,7 @@ button:focus, input:focus, select:focus, textarea:focus {
   }
   
   .logo-text {
-    font-size: 0.7rem !important;
+    font-size: 1rem;
   }
   
   .logo-subtitle {
@@ -2356,13 +2295,13 @@ button:focus, input:focus, select:focus, textarea:focus {
   padding: 15px;
   background-color: #f8f9fa;
   border-radius: 8px;
-  border-left: 4px solid #007bff;
+  border-left: 4px solid var(--tech-blue);
   display: flex;
   align-items: center;
 }
 
 .manager-notice i {
-  color: #007bff;
+  color: var(--tech-blue);
   margin-right: 10px;
   font-size: 1.2rem;
 }
@@ -2624,22 +2563,22 @@ button:focus, input:focus, select:focus, textarea:focus {
 
 .ttn-info {
   background: #f0f8ff;
-  border-left-color: #007bff;
+  border-left-color: var(--tech-blue);
 }
 
 .ttn-warning {
   background: #fff3cd;
-  border-left-color: #ffc107;
+  border-left-color: var(--warning);
 }
 
 /* Стили для кнопки ТТН */
 .btn-ttn {
-  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  background: linear-gradient(135deg, var(--tech-blue) 0%, #1565C0 100%);
   color: white;
 }
 
 .btn-ttn:hover {
-  background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+  background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
 }
 
 /* Стили для ссылки отслеживания */
@@ -2647,16 +2586,16 @@ button:focus, input:focus, select:focus, textarea:focus {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #007bff;
+  color: var(--tech-blue);
   text-decoration: none;
   padding: 0.5rem 1rem;
-  border: 1px solid #007bff;
+  border: 1px solid var(--tech-blue);
   border-radius: var(--border-radius);
   transition: var(--transition);
 }
 
 .tracking-link:hover {
-  background: #007bff;
+  background: var(--tech-blue);
   color: white;
   text-decoration: none;
 }
@@ -2828,7 +2767,7 @@ body.search-suggestions-open {
 }
 
 .about-section .highlight {
-  background: var(--surface-3);
+  background: rgba(255, 255, 255, 0.1);
   padding: 1.5rem;
   border-radius: var(--border-radius);
   border-left: 4px solid var(--accent-light);
@@ -3010,13 +2949,13 @@ body.search-suggestions-open {
 
 .category-item:hover {
     background: #e9ecef;
-    border-color: #007bff;
+    border-color: var(--tech-blue);
 }
 
 .category-item.active {
-    background: #007bff;
+    background: var(--tech-blue);
     color: white;
-    border-color: #007bff;
+    border-color: var(--tech-blue);
 }
 
 .category-item .category-count {
@@ -3055,9 +2994,9 @@ body.search-suggestions-open {
 }
 
 .btn-category:hover {
-    background: #007bff;
+    background: var(--tech-blue);
     color: white;
-    border-color: #007bff;
+    border-color: var(--tech-blue);
 }
 
 /* Стили для улучшенных скелетонов */
@@ -3068,7 +3007,7 @@ body.search-suggestions-open {
 
 .skeleton-img {
   width: 100%;
-  height: 200px;
+  height: 280px;
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
@@ -3132,7 +3071,7 @@ body.search-suggestions-open {
   width: 50px;
   height: 50px;
   border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
+  border-top: 5px solid var(--tech-blue);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
@@ -3152,7 +3091,7 @@ body.search-suggestions-open {
 /* Адаптивные стили для скелетонов */
 @media (max-width: 768px) {
   .skeleton-img {
-    height: 150px;
+    height: 220px;
   }
   
   .skeleton-title {
@@ -3666,9 +3605,9 @@ main {
     margin-bottom: 20px;
 }
 
-.proprofile-avatar {
+.profile-avatar {
     font-size: 60px;
-    color: #3498db;
+    color: var(--tech-blue);
 }
 
 .profile-details p {
@@ -3700,7 +3639,7 @@ main {
 
 .stat-item i {
     font-size: 24px;
-    color: #3498db;
+    color: var(--tech-blue);
     margin-bottom: 8px;
 }
 
@@ -3708,7 +3647,7 @@ main {
     display: block;
     font-size: 24px;
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--dark);
 }
 
 .stat-label {
@@ -3723,27 +3662,27 @@ main {
     padding: 20px;
     margin-bottom: 15px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    border-left: 4px solid #3498db;
+    border-left: 4px solid var(--tech-blue);
 }
 
 .user-order-card.new {
-    border-left-color: #3498db;
+    border-left-color: var(--tech-blue);
 }
 
 .user-order-card.processing {
-    border-left-color: #f39c12;
+    border-left-color: var(--warning);
 }
 
 .user-order-card.shipped {
-    border-left-color: #9b59b6;
+    border-left-color: var(--secondary);
 }
 
 .user-order-card.delivered {
-    border-left-color: #27ae60;
+    border-left-color: var(--success);
 }
 
 .user-order-card.cancelled {
-    border-left-color: #e74c3c;
+    border-left-color: var(--danger);
 }
 
 .order-card-header {
@@ -3755,7 +3694,7 @@ main {
 
 .order-id {
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--dark);
 }
 
 .order-date {
@@ -3778,34 +3717,34 @@ main {
 }
 
 .status-new {
-    background: #e3f2fd;
-    color: #1976d2;
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--tech-blue);
 }
 
 .status-processing {
-    background: #fff3e0;
-    color: #f57c00;
+    background: rgba(255, 193, 7, 0.1);
+    color: var(--warning);
 }
 
 .status-shipped {
-    background: #f3e5f5;
-    color: #7b1fa2;
+    background: rgba(33, 150, 243, 0.1);
+    color: var(--accent);
 }
 
 .status-delivered {
-    background: #e8f5e8;
-    color: #388e3c;
+    background: rgba(46, 125, 50, 0.1);
+    color: var(--success);
 }
 
 .status-cancelled {
-    background: #ffebee;
-    color: #d32f2f;
+    background: rgba(244, 67, 54, 0.1);
+    color: var(--danger);
 }
 
 .order-total {
     font-size: 18px;
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--dark);
 }
 
 .order-card-delivery p {
@@ -3814,14 +3753,14 @@ main {
 }
 
 .order-ttn-info {
-    background: #e3f2fd;
+    background: rgba(52, 152, 219, 0.1);
     padding: 10px;
     border-radius: 6px;
     margin: 10px 0;
 }
 
 .track-link {
-    color: #1976d2;
+    color: var(--tech-blue);
     text-decoration: none;
     font-size: 14px;
 }
@@ -3856,7 +3795,7 @@ main {
 .error-message {
     text-align: center;
     padding: 40px 20px;
-    color: #e74c3c;
+    color: var(--danger);
 }
 
 .error-message i {
@@ -3898,43 +3837,6 @@ main {
 
 .card:hover img {
   transform: scale(1.05);
-}
-
-/* Уменьшаем отступы в карточке для компенсации увеличенного изображения */
-.card h3 {
-  font-size: 1.1rem;
-  padding: 0 0.8rem;
-  margin: 0.6rem 0;
-  line-height: 1.3;
-  min-height: auto;
-}
-
-.card p {
-  padding: 0 0.8rem;
-  color: var(--gray);
-  font-size: 0.9rem;
-  margin-bottom: 0.8rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  min-height: auto;
-}
-
-.price-container {
-  padding: 0 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.8rem;
-  flex-wrap: wrap;
-}
-
-.card-actions {
-  padding: 0 0.8rem 0.8rem;
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
 }
 
 /* АДАПТИВНОСТЬ ДЛЯ УВЕЛИЧЕННЫХ ИЗОБРАЖЕНИЙ */
@@ -3979,6 +3881,12 @@ main {
   
   .card-actions {
     padding: 0 0.6rem 0.6rem;
+  }
+  
+  .card-actions .btn {
+    min-width: 90px;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
   }
 }
 
@@ -4260,11 +4168,6 @@ main {
   margin-top: 0.5rem;
 }
 
-.product-info h2 {
-  margin-top: 0;
-  padding-right: 2.5rem;
-}
-
 /* Специфические исправления для модального окна профиля */
 .profile-container h2 {
   margin-top: 0;
@@ -4418,8 +4321,8 @@ main {
 
 .gender-btn {
     padding: 8px 16px;
-    border: 2px solid var(--primary-light);
-    background: var(--white);
+    border: 2px solid var(--primary);
+    background: white;
     color: var(--primary);
     border-radius: 20px;
     cursor: pointer;
@@ -4428,15 +4331,14 @@ main {
 }
 
 .gender-btn:hover {
-    background: #FFF0F3;
+    background: rgba(198, 40, 40, 0.1);
     transform: translateY(-2px);
 }
 
 .gender-btn.active {
-    background: linear-gradient(135deg, var(--primary), var(--peach));
+    background: var(--primary);
     color: white;
-    box-shadow: 0 6px 20px rgba(255, 123, 163, 0.3);
-    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
 }
 
 @media (max-width: 768px) {
@@ -4447,6 +4349,71 @@ main {
     .gender-btn {
         padding: 6px 12px;
         font-size: 14px;
+    }
+}
+
+/* Стили для фильтра по видам спорта */
+.sport-type-filter {
+    display: flex;
+    gap: 8px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.sport-type-btn {
+    padding: 10px 16px;
+    border: 2px solid var(--primary-light);
+    background: var(--white);
+    color: var(--primary);
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.sport-type-btn:hover {
+    background: var(--primary-light);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(198, 40, 40, 0.2);
+}
+
+.sport-type-btn.active {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+}
+
+/* Адаптивность для фильтра видов спорта */
+@media (max-width: 768px) {
+    .sport-type-filter {
+        gap: 6px;
+        margin: 12px 0;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    
+    .sport-type-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .sport-type-filter {
+        gap: 4px;
+        margin: 10px 0;
+    }
+    
+    .sport-type-btn {
+        padding: 6px 10px;
+        font-size: 12px;
     }
 }
 
@@ -4545,7 +4512,7 @@ main {
 
 .user-dropdown a:hover {
     background-color: #f8f9fa;
-    color: #2E8B57;
+    color: var(--primary);
 }
 
 .user-menu:hover .user-dropdown {
