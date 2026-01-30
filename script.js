@@ -1658,8 +1658,8 @@ function renderCatalogAds() {
     </div>
   `;
   
-  if (grid.children.length > 2) {
-    grid.insertBefore(adContainer, grid.children[2]);
+  if (grid.children.length > 4) {
+    grid.insertBefore(adContainer, grid.children[4]);
   } else {
     grid.appendChild(adContainer);
   }
